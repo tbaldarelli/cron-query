@@ -3,11 +3,11 @@
 ## Phase 1: MVP Core Functionality
 
 ### Task 1: Project Setup
-- [ ] Create Python package structure (`src/cron_query/`)
-- [ ] Set up `requirements.txt` with dependencies (`croniter`, `argparse`)
-- [ ] Create `setup.py` for package installation
-- [ ] Initialize basic CLI entry point (`main.py`)
-- [ ] Set up basic logging configuration
+- [x] Create Python package structure (`src/cron_query/`)
+- [x] Set up `requirements.txt` with dependencies (`croniter`, `argparse`)
+- [x] Create `setup.py` for package installation
+- [x] Initialize basic CLI entry point (`main.py`)
+- [x] Set up basic logging configuration
 
 **Estimated Time**: 1-2 hours  
 **Dependencies**: None  
