@@ -26,14 +26,14 @@
 **Priority**: High
 
 ### Task 3: Query Parser (`query_parser.py`)
-- [ ] Implement `QueryCriteria` data class
-- [ ] Create `parse_day_query()` for day-based queries
+- [x] Implement `QueryCriteria` data class
+- [x] Create `parse_day_query()` for day-based queries
   - "Saturday", "Sunday", etc.
   - "weekdays", "weekends"
-- [ ] Create `parse_time_query()` for time-based queries
+- [x] Create `parse_time_query()` for time-based queries
   - "8 AM", "8:30 PM", "20:30"
-- [ ] Basic query validation and error handling
-- [ ] Unit tests for each query type
+- [x] Basic query validation and error handling
+- [x] Unit tests for each query type
 
 **Estimated Time**: 4-5 hours  
 **Dependencies**: Task 1  
