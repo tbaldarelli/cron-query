@@ -41,17 +41,43 @@ def create_parser() -> argparse.ArgumentParser:
         description=__description__,
         epilog="""
 Examples:
-  cron-query "which jobs run on Saturday"
-  cron-query "which jobs run at 8 AM"
-  cron-query "which jobs run this Saturday"
-  cron-query --format json "which jobs run on weekdays"
+  Basic queries:
+    cron-query "which jobs run on Saturday"
+    cron-query "which jobs run at 8 AM"
+    cron-query "which jobs run on weekdays"
+  
+  Relative date queries:
+    cron-query "which jobs run this Saturday"
+    cron-query "which jobs run next Monday"
+    cron-query "which jobs run coming weekend"
+  
+  Time range queries:
+    cron-query "which jobs run after 10 AM"
+    cron-query "which jobs run before 5 PM"
+    cron-query "which jobs run between 9 AM and 5 PM"
+  
+  Combined queries:
+    cron-query "which jobs run this Saturday after 10 AM"
+    cron-query "which jobs run weekends before 5 PM"
+    cron-query "which jobs run Monday between 9 AM and 5 PM"
+  
+  File analysis:
+    cron-query --file /path/to/crontab "which jobs run on Saturday"
+  
+  Output formats:
+    cron-query --format json "which jobs run today"
+    cron-query --format table "which jobs run after 6 PM"
         """,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     
     parser.add_argument(
         'query',
-        help='Natural language query about cron job schedules'
+        help='Natural language query about cron job schedules. '
+             'Supports basic queries ("Saturday", "8 AM"), '
+             'relative dates ("this Saturday", "next Monday"), '
+             'time ranges ("after 10 AM", "between 9 AM and 5 PM"), '
+             'and combined queries ("this Saturday after 10 AM").'
     )
     
     parser.add_argument(

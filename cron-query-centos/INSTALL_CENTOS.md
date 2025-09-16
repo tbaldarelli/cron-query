@@ -7,9 +7,28 @@ Make sure Python 3.6+ is installed:
 python3 --version
 ```
 
-If not installed:
+If not installed, or if you get 'command not found':
 ```bash
+# Try these commands to find your Python installation:
+python --version
+python3.6 --version  
+python3.7 --version
+python3.8 --version
+
+# Install Python 3 on CentOS/RHEL:
 sudo yum install python3 python3-pip
+# OR for newer versions:
+sudo yum install python36 python36-pip
+sudo yum install python37 python37-pip
+```
+
+**Note for CentOS 7**: If `python3` command is not available but `python3.7` is,
+you may need to edit the shebang line in the `cron-query` script:
+```bash
+# Change the first line from:
+#!/usr/bin/env python3
+# To:
+#!/usr/bin/env python3.7
 ```
 
 ## Installation Steps

@@ -78,13 +78,35 @@ def matches_criteria(job: CronJob, criteria: QueryCriteria) -> bool:
     
     try:
         if criteria.query_type == QueryType.DAY_BASED:
-            return runs_on_day_of_week(job, criteria.days_of_week)
+            if criteria.is_specific_date and criteria.specific_date:
+                # For specific dates like "this Saturday", check if job runs on that exact date
+                return runs_on_specific_date(job, criteria.specific_date)
+            else:
+                # Regular day-of-week matching
+                return runs_on_day_of_week(job, criteria.days_of_week)
         elif criteria.query_type == QueryType.TIME_BASED:
-            return runs_at_time(job, criteria.time_hour, criteria.time_minute)
+            # Handle time ranges
+            if criteria.is_time_after or criteria.is_time_before or criteria.is_time_between:
+                return runs_in_time_range(job, criteria)
+            else:
+                # Regular specific time matching
+                return runs_at_time(job, criteria.time_hour, criteria.time_minute)
         elif criteria.query_type == QueryType.COMBINED:
-            # For future enhancement - combined day and time queries
-            day_match = runs_on_day_of_week(job, criteria.days_of_week)
-            time_match = runs_at_time(job, criteria.time_hour, criteria.time_minute)
+            # Combined day and time queries with advanced features
+            day_match = False
+            if criteria.is_specific_date and criteria.specific_date:
+                day_match = runs_on_specific_date(job, criteria.specific_date)
+            elif criteria.days_of_week:
+                day_match = runs_on_day_of_week(job, criteria.days_of_week)
+            elif criteria.weekdays_only or criteria.weekends_only:
+                day_match = runs_on_day_of_week(job, criteria.days_of_week)
+            
+            time_match = False
+            if criteria.is_time_after or criteria.is_time_before or criteria.is_time_between:
+                time_match = runs_in_time_range(job, criteria)
+            elif criteria.time_hour is not None:
+                time_match = runs_at_time(job, criteria.time_hour, criteria.time_minute)
+            
             return day_match and time_match
         else:
             logger.warning(f"Unknown query type: {criteria.query_type}")
@@ -203,6 +225,126 @@ def get_next_runs(job: CronJob, count: int = 5, start_time: Optional[datetime] =
         
     except Exception as e:
         raise ScheduleAnalysisError(f"Failed to calculate next runs for job '{job.raw_line}': {e}")
+
+
+def runs_on_specific_date(job: CronJob, target_date: datetime) -> bool:
+    """
+    Check if a cron job runs on a specific date.
+    
+    Args:
+        job: Cron job to check
+        target_date: Specific date to check
+        
+    Returns:
+        True if job runs on the target date, False otherwise
+        
+    Raises:
+        ScheduleAnalysisError: If analysis fails
+    """
+    if not job.is_valid:
+        return False
+    
+    try:
+        # Create croniter starting from the target date
+        start_of_day = target_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_of_day = start_of_day + timedelta(days=1)
+        
+        cron = croniter(job.cron_expression, start_of_day)
+        
+        # Use a more efficient approach: check if the job would run at all on this date
+        # We'll sample from one minute before the target day to the end of the target day
+        pre_start = start_of_day - timedelta(minutes=1)
+        cron = croniter(job.cron_expression, pre_start)
+        
+        # Check for runs within the target date
+        for _ in range(24 * 60 + 2):  # Check beyond the day boundary
+            try:
+                next_run = cron.get_next(datetime)
+                if next_run >= end_of_day:
+                    break  # Past the target date, no more runs on this date
+                if start_of_day <= next_run < end_of_day:
+                    return True  # Found a run on the target date
+            except:
+                break  # Error getting next run
+        
+        return False
+        
+    except Exception as e:
+        raise ScheduleAnalysisError(f"Failed to check specific date for job '{job.raw_line}': {e}")
+
+
+def runs_in_time_range(job: CronJob, criteria) -> bool:
+    """
+    Check if a cron job runs within the specified time range.
+    
+    Args:
+        job: Cron job to check
+        criteria: Query criteria with time range information
+        
+    Returns:
+        True if job runs within the time range, False otherwise
+        
+    Raises:
+        ScheduleAnalysisError: If analysis fails
+    """
+    if not job.is_valid:
+        return False
+    
+    try:
+        # Parse the hour and minute fields to get all possible run times
+        hour_values = _parse_cron_field(job.hour, 0, 23)
+        minute_values = _parse_cron_field(job.minute, 0, 59)
+        
+        # Check each combination of hour and minute
+        for hour in hour_values:
+            for minute in minute_values:
+                if _time_in_range(hour, minute, criteria):
+                    return True
+        
+        return False
+        
+    except Exception as e:
+        raise ScheduleAnalysisError(f"Failed to check time range for job '{job.raw_line}': {e}")
+
+
+def _time_in_range(hour: int, minute: int, criteria) -> bool:
+    """
+    Check if a specific time falls within the criteria's time range.
+    
+    Args:
+        hour: Hour (0-23)
+        minute: Minute (0-59)
+        criteria: Query criteria with time range information
+        
+    Returns:
+        True if time is in range, False otherwise
+    """
+    current_minutes = hour * 60 + minute
+    
+    if criteria.is_time_after and criteria.time_range_start:
+        start_hour, start_minute = criteria.time_range_start
+        start_minutes = start_hour * 60 + start_minute
+        return current_minutes > start_minutes
+    
+    elif criteria.is_time_before and criteria.time_range_end:
+        end_hour, end_minute = criteria.time_range_end
+        end_minutes = end_hour * 60 + end_minute
+        return current_minutes < end_minutes
+    
+    elif criteria.is_time_between and criteria.time_range_start and criteria.time_range_end:
+        start_hour, start_minute = criteria.time_range_start
+        end_hour, end_minute = criteria.time_range_end
+        start_minutes = start_hour * 60 + start_minute
+        end_minutes = end_hour * 60 + end_minute
+        
+        if start_minutes <= end_minutes:
+            # Normal range: 9 AM to 5 PM
+            return start_minutes <= current_minutes <= end_minutes
+        else:
+            # Overnight range: 10 PM to 6 AM
+            return current_minutes >= start_minutes or current_minutes <= end_minutes
+    
+    return False
 
 
 def _check_complex_day_logic(job: CronJob, target_days: Set[int], cron: croniter) -> bool:
@@ -342,8 +484,13 @@ def _parse_cron_field(field: str, min_val: int, max_val: int) -> Set[int]:
             values.update(range(start, end + 1))
             
         else:
-            # Single value
-            values.add(int(part))
+            # Single value or wildcard
+            if part == '*':
+                # Wildcard - include all values in range
+                values.update(range(min_val, max_val + 1))
+            else:
+                # Single numeric value
+                values.add(int(part))
     
     # Handle Sunday conversion for day-of-week fields (7 -> 0)
     # This must be done before filtering to valid range
