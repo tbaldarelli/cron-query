@@ -9,10 +9,14 @@ import shutil
 import sys
 from pathlib import Path
 
-def create_centos_package():
-    """Create a portable package for CentOS."""
+def create_centos_package(python_cmd="python3"):
+    """Create a portable package for CentOS.
     
-    print("📦 Creating CentOS package for cron-query...")
+    Args:
+        python_cmd: Python command to use in shebang (e.g., 'python3', 'python3.7', 'python')
+    """
+    
+    print(f"📦 Creating CentOS package for cron-query (using {python_cmd})...")
     
     # Create package directory
     package_dir = Path("cron-query-centos")
@@ -34,7 +38,7 @@ def create_centos_package():
     # Create a simple runner script
     runner_script = package_dir / "cron-query"
     with open(runner_script, 'w', encoding='utf-8') as f:
-        f.write("""#!/usr/bin/env python3
+        f.write(f"""#!/usr/bin/env {python_cmd}
 \"\"\"
 Cron-Query - Natural language cron job scheduler analysis tool
 \"\"\"
@@ -70,9 +74,28 @@ Make sure Python 3.6+ is installed:
 python3 --version
 ```
 
-If not installed:
+If not installed, or if you get 'command not found':
 ```bash
+# Try these commands to find your Python installation:
+python --version
+python3.6 --version  
+python3.7 --version
+python3.8 --version
+
+# Install Python 3 on CentOS/RHEL:
 sudo yum install python3 python3-pip
+# OR for newer versions:
+sudo yum install python36 python36-pip
+sudo yum install python37 python37-pip
+```
+
+**Note for CentOS 7**: If `python3` command is not available but `python3.7` is,
+you may need to edit the shebang line in the `cron-query` script:
+```bash
+# Change the first line from:
+#!/usr/bin/env python3
+# To:
+#!/usr/bin/env python3.7
 ```
 
 ## Installation Steps
@@ -225,6 +248,11 @@ Package contents:
   ├── sample_crontab.txt      # Test crontab file
   └── test_on_centos.sh       # Quick test script
 
+Usage:
+  python package_for_centos.py           # Creates package with 'python3' shebang
+  python package_for_centos.py python3.7 # Creates package with 'python3.7' shebang
+  python package_for_centos.py python    # Creates package with 'python' shebang
+
 Next steps:
 1. Copy the '{package_dir}' directory to your CentOS machine
 2. Follow the instructions in INSTALL_CENTOS.md
@@ -235,4 +263,11 @@ Example copy command:
 """)
 
 if __name__ == '__main__':
-    create_centos_package()
+    import sys
+    
+    # Check for python version argument
+    python_cmd = "python3"  # default
+    if len(sys.argv) > 1:
+        python_cmd = sys.argv[1]
+    
+    create_centos_package(python_cmd)

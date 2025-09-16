@@ -140,3 +140,5 @@ dmypy.json
 .Trashes
 ehthumbs.db
 Thumbs.db
+# Deployment packages
+cron-query-centos/

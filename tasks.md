@@ -142,6 +142,12 @@
 
 ## Phase 3: Polish & Documentation
 
+Task: Cross-Platform Compatibility
+Add .gitattributes for consistent line endings
+Update packaging script to force Unix line endings
+Test deployment workflow from Windows → Linux
+Document cross-platform development practices
+
 ### Task 11: Comprehensive Testing
 - [ ] Achieve >90% test coverage
 - [ ] Add integration tests with real cron data
