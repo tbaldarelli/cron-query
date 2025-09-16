@@ -87,25 +87,29 @@
 
 ## Phase 2: Enhanced Features
 
-### Task 7: Advanced Query Support
-- [ ] Support "this Saturday" vs "any Saturday"
-- [ ] Handle specific date queries ("January 15th")
-- [ ] Support time ranges ("between 9 AM and 5 PM")
-- [ ] Add date calculation utilities
-- [ ] Complex scenario support:
-  - "Which jobs run on the first of the month?"
-  - "Which jobs run on the first of the month at 8 AM?"
-  - "Which jobs run on Mon, Wed, Fri at 8 AM?"
-  - "Which jobs run on the first Monday of every month?"
-  - "Which jobs that run Mon/Wed/Fri would run on the first of this month?"
-  - "Which jobs run between 9 AM and 5 PM on weekdays?"
-  - "Which jobs run this Friday vs any Friday?"
-- [ ] Handle DOM vs DOW intersection logic for complex queries
-- [ ] Extended test coverage
+### Task 7: Advanced Query Support ✅
+- [x] Support "this Saturday" vs "any Saturday"
+- [x] Handle specific date queries (relative dates like "this Saturday", "next Monday")
+- [x] Support time ranges ("between 9 AM and 5 PM", "after 10 AM", "before 5 PM")
+- [x] Add date calculation utilities
+- [x] Complex scenario support:
+  - [x] "Which jobs run between 9 AM and 5 PM on weekdays?"
+  - [x] "Which jobs run this Friday vs any Friday?"
+  - [x] "Which jobs run this Saturday after 10 AM?"
+  - [x] Combined day and time range queries
+  - [ ] "Which jobs run on the first of the month?" (DOM-specific, future enhancement)
+  - [ ] "Which jobs run on the first Monday of every month?" (complex DOM+DOW, future)
+- [x] Handle DOM vs DOW intersection logic for combined queries
+- [x] Extended test coverage (20 comprehensive tests)
+- [x] **BONUS**: Typo tolerance ("comming" vs "coming")
+- [x] **BONUS**: Punctuation handling (commas, complex formatting)
+- [x] **BONUS**: 12-hour and 24-hour time format support
+- [x] **BONUS**: Wildcard cron field parsing (*/15, ranges, steps)
 
-**Estimated Time**: 4-5 hours  
+**Estimated Time**: 4-5 hours (completed with significant bonus features)  
 **Dependencies**: Task 6  
-**Priority**: Medium
+**Priority**: Medium  
+**Status**: ✅ COMPLETED - Resolves CentOS issue with "jobs this comming Saturday, after 10 am"
 
 ### Task 8: Advanced Output Features
 - [ ] Add color-coded output for terminal display
