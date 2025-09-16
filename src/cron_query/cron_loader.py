@@ -247,6 +247,69 @@ def load_user_crontab(user: Optional[str] = None) -> List[CronJob]:
         raise
 
 
+def load_crontab_from_file(file_path: str) -> List[CronJob]:
+    """
+    Load crontab entries from a file.
+    
+    Args:
+        file_path: Path to the crontab file to load
+        
+    Returns:
+        List of CronJob objects parsed from the file
+        
+    Raises:
+        FileNotFoundError: If the file doesn't exist
+        PermissionError: If the file can't be read
+        CronParseError: If any cron lines are invalid
+    """
+    import os
+    
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"Crontab file not found: {file_path}")
+    
+    if not os.path.isfile(file_path):
+        raise ValueError(f"Path is not a file: {file_path}")
+    
+    logger.info(f"Loading crontab from file: {file_path}")
+    
+    jobs = []
+    parse_errors = []
+    
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            for line_number, line in enumerate(f, 1):
+                try:
+                    job = parse_cron_line(line.strip(), source="file", user=None)
+                    if job:  # Skip None results (comments, empty lines, etc.)
+                        jobs.append(job)
+                        logger.debug(f"Parsed job from line {line_number}: {job.raw_line}")
+                except CronParseError as e:
+                    error_msg = f"Line {line_number}: {e}"
+                    logger.warning(error_msg)
+                    parse_errors.append(error_msg)
+    
+    except UnicodeDecodeError as e:
+        raise CronParseError(f"File encoding error: {e}")
+    except PermissionError:
+        raise PermissionError(f"Permission denied reading file: {file_path}")
+    except Exception as e:
+        raise CronParseError(f"Error reading crontab file: {e}")
+    
+    if parse_errors:
+        logger.warning(f"Encountered {len(parse_errors)} parsing errors in {file_path}")
+        for error in parse_errors[:5]:  # Log first 5 errors
+            logger.warning(f"  {error}")
+        if len(parse_errors) > 5:
+            logger.warning(f"  ... and {len(parse_errors) - 5} more errors")
+    
+    logger.info(f"Successfully loaded {len(jobs)} cron jobs from {file_path}")
+    
+    if parse_errors and not jobs:
+        raise CronParseError(f"No valid cron jobs found in {file_path}. All lines had parsing errors.")
+    
+    return jobs
+
+
 def _get_mock_crontab_data(user: Optional[str] = None) -> List[CronJob]:
     """
     Provide mock crontab data for Windows development.

@@ -66,14 +66,22 @@
 **Dependencies**: Task 4  
 **Priority**: High
 
-### Task 6: CLI Integration (`main.py`)
-- [ ] Set up argument parsing with `argparse`
-- [ ] Connect all components in main execution flow
-- [ ] Add `--help` documentation with examples
-- [ ] Basic error handling and user feedback
-- [ ] Integration testing with sample data
+### Task 6: CLI Integration (`main.py`) ✅
+- [x] Set up argument parsing with `argparse`
+- [x] Connect all components in main execution flow
+- [x] Add `--help` documentation with examples
+- [x] Basic error handling and user feedback
+- [x] Integration testing with sample data
+- [x] Implement `--format` option (list|table|json)
+- [x] Add `--verbose` mode with additional details
+- [x] Add `--source` option for future extensibility
+- [x] Output format validation and error handling
+- [x] **BONUS**: `--file` option to analyze crontab files
+- [x] **BONUS**: `load_crontab_from_file()` function with robust parsing
+- [x] **BONUS**: File takes precedence over source when specified
+- [x] **BONUS**: Comprehensive file loading tests and error handling
 
-**Estimated Time**: 2-3 hours  
+**Estimated Time**: 3-4 hours (completed with bonus file feature)  
 **Dependencies**: Tasks 2-5  
 **Priority**: High
 
@@ -99,15 +107,16 @@
 **Dependencies**: Task 6  
 **Priority**: Medium
 
-### Task 8: Multiple Output Formats
-- [ ] Implement table format (`--format table`)
-- [ ] Implement JSON format (`--format json`)
-- [ ] Add verbose mode with additional details
-- [ ] Output format validation and tests
+### Task 8: Advanced Output Features
+- [ ] Add color-coded output for terminal display
+- [ ] Implement custom output templates
+- [ ] Add export capabilities (CSV, YAML)
+- [ ] Enhanced verbose mode with cron parsing details
+- [ ] Output pagination for large result sets
 
 **Estimated Time**: 3-4 hours  
-**Dependencies**: Task 5  
-**Priority**: Medium
+**Dependencies**: Task 6  
+**Priority**: Low
 
 ### Task 9: System Crontab Support
 - [ ] Implement `load_system_crontabs()` (Linux-specific)

@@ -1,0 +1,22 @@
+# Sample crontab file for testing
+# This is a comment and will be ignored
+
+# Daily backup at 2 AM
+0 2 * * * /home/user/backup.sh
+
+# Weekly report on Mondays at 9 AM  
+0 9 * * 1 /home/user/weekly-report.py
+
+# Check disk space every hour
+0 * * * * /home/user/check-disk.sh
+
+# Special keywords
+@daily /home/user/daily-task.sh
+@weekly /home/user/weekly-cleanup.sh
+
+# Multiple jobs on weekdays
+30 8 * * 1-5 /home/user/morning-routine.sh
+0 17 * * 1-5 /home/user/end-of-day.sh
+
+# Weekend job
+0 10 * * 6,0 /home/user/weekend-maintenance.sh
