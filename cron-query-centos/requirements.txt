@@ -1,8 +1,0 @@
-# Core dependencies
-croniter>=1.0.0
-python-dateutil>=2.8.0
-dataclasses>=0.6; python_version<"3.7"
-
-# Development dependencies
-pytest>=6.0.0
-pytest-cov>=2.10.0
