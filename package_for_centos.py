@@ -9,6 +9,37 @@ import shutil
 import sys
 from pathlib import Path
 
+
+def copy_with_unix_endings(src_path, dst_path):
+    """Copy a file while converting line endings to Unix format."""
+    with open(src_path, 'r', encoding='utf-8') as src_file:
+        content = src_file.read()
+    
+    with open(dst_path, 'w', encoding='utf-8', newline='\n') as dst_file:
+        dst_file.write(content)
+
+
+def copy_tree_with_unix_endings(src_dir, dst_dir, file_extensions=('.py', '.txt', '.md', '.sh')):
+    """Copy a directory tree while converting text files to Unix line endings."""
+    src_path = Path(src_dir)
+    dst_path = Path(dst_dir)
+    
+    dst_path.mkdir(parents=True, exist_ok=True)
+    
+    for item in src_path.rglob('*'):
+        if item.is_file():
+            relative_path = item.relative_to(src_path)
+            dst_item = dst_path / relative_path
+            
+            # Create parent directories if needed
+            dst_item.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Check if this is a text file that needs line ending conversion
+            if any(str(item).endswith(ext) for ext in file_extensions):
+                copy_with_unix_endings(item, dst_item)
+            else:
+                shutil.copy2(item, dst_item)
+
 def create_centos_package(python_cmd="python3"):
     """Create a portable package for CentOS.
     
@@ -26,18 +57,18 @@ def create_centos_package(python_cmd="python3"):
     
     print(f"✓ Created package directory: {package_dir}")
     
-    # Copy source code
+    # Copy source code with Unix line endings
     src_dir = package_dir / "src"
-    shutil.copytree("src", src_dir)
-    print("✓ Copied source code")
+    copy_tree_with_unix_endings("src", src_dir)
+    print("✓ Copied source code (converted to Unix line endings)")
     
-    # Copy requirements
-    shutil.copy("requirements.txt", package_dir)
-    print("✓ Copied requirements.txt")
+    # Copy requirements with Unix line endings
+    copy_with_unix_endings("requirements.txt", package_dir / "requirements.txt")
+    print("✓ Copied requirements.txt (converted to Unix line endings)")
     
     # Create a simple runner script
     runner_script = package_dir / "cron-query"
-    with open(runner_script, 'w', encoding='utf-8') as f:
+    with open(runner_script, 'w', encoding='utf-8', newline='\n') as f:
         f.write(f"""#!/usr/bin/env {python_cmd}
 \"\"\"
 Cron-Query - Natural language cron job scheduler analysis tool
@@ -64,7 +95,7 @@ if __name__ == '__main__':
     
     # Create installation instructions
     install_instructions = package_dir / "INSTALL_CENTOS.md"
-    with open(install_instructions, 'w', encoding='utf-8') as f:
+    with open(install_instructions, 'w', encoding='utf-8', newline='\n') as f:
         f.write("""# Installing cron-query on CentOS
 
 ## Prerequisites
@@ -177,7 +208,7 @@ pip3 install --user croniter
     
     # Create a test crontab for CentOS testing
     test_crontab = package_dir / "sample_crontab.txt"
-    with open(test_crontab, 'w', encoding='utf-8') as f:
+    with open(test_crontab, 'w', encoding='utf-8', newline='\n') as f:
         f.write("""# Sample crontab for testing on CentOS
 # Daily backup at 2 AM
 0 2 * * * /usr/local/bin/backup.sh
@@ -206,7 +237,7 @@ pip3 install --user croniter
     
     # Create a quick test script
     test_script = package_dir / "test_on_centos.sh"
-    with open(test_script, 'w', encoding='utf-8') as f:
+    with open(test_script, 'w', encoding='utf-8', newline='\n') as f:
         f.write("""#!/bin/bash
 # Quick test script for CentOS
 
