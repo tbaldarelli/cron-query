@@ -40,12 +40,12 @@
 **Priority**: High
 
 ### Task 4: Schedule Analyzer (`schedule_analyzer.py`)
-- [ ] Implement core matching logic using `croniter`
-- [ ] Create `runs_on_day_of_week()` function
-- [ ] Create `runs_at_time()` function
-- [ ] Handle day-of-month OR day-of-week logic correctly
-- [ ] Implement `get_next_runs()` for schedule preview
-- [ ] Comprehensive unit tests with edge cases
+- [x] Implement core matching logic using `croniter`
+- [x] Create `runs_on_day_of_week()` function
+- [x] Create `runs_at_time()` function
+- [x] Handle day-of-month OR day-of-week logic correctly
+- [x] Implement `get_next_runs()` for schedule preview
+- [x] Comprehensive unit tests with edge cases
 
 **Estimated Time**: 5-6 hours  
 **Dependencies**: Task 2  
@@ -80,6 +80,15 @@
 - [ ] Handle specific date queries ("January 15th")
 - [ ] Support time ranges ("between 9 AM and 5 PM")
 - [ ] Add date calculation utilities
+- [ ] Complex scenario support:
+  - "Which jobs run on the first of the month?"
+  - "Which jobs run on the first of the month at 8 AM?"
+  - "Which jobs run on Mon, Wed, Fri at 8 AM?"
+  - "Which jobs run on the first Monday of every month?"
+  - "Which jobs that run Mon/Wed/Fri would run on the first of this month?"
+  - "Which jobs run between 9 AM and 5 PM on weekdays?"
+  - "Which jobs run this Friday vs any Friday?"
+- [ ] Handle DOM vs DOW intersection logic for complex queries
 - [ ] Extended test coverage
 
 **Estimated Time**: 4-5 hours  
