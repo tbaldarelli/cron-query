@@ -196,6 +196,23 @@ Document cross-platform development practices
 **Dependencies**: Task 13  
 **Priority**: Learning/Optional
 
+### Task 15: Context-Aware Next Runs Enhancement
+- [ ] Enhance "Next runs" display to show runs on the queried date/context
+- [ ] For specific date queries ("this Saturday"), prioritize Saturday runs over chronological
+- [ ] For time range queries ("after 6 PM"), show next runs within that time range
+- [ ] Add "Next runs on [date]" vs "Next runs overall" distinction in output
+- [ ] Update output formatter to calculate context-relevant schedules
+- [ ] Maintain backward compatibility with existing next run behavior
+- [ ] Add tests for context-aware scheduling display
+
+**Example Enhancement**:
+Current: `0 * * * *` shows "Next runs: 2025-09-16 19:00, 2025-09-16 20:00"
+Enhanced: Query "this Saturday after 6 PM" shows "Next runs on Saturday: 2025-09-20 19:00, 2025-09-20 20:00"
+
+**Estimated Time**: 2-3 hours  
+**Dependencies**: Task 7  
+**Priority**: Low (UX Enhancement)
+
 ## Development Milestones
 
 ### Milestone 1: Basic Functionality (Tasks 1-6)
