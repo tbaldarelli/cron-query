@@ -165,10 +165,16 @@
 
 ### Task 12: Comprehensive Testing
 - [ ] Achieve >90% test coverage
-- [ ] Add integration tests with real cron data
-- [ ] Performance benchmarking
-- [ ] Edge case testing (leap years, timezone changes)
-- [ ] Test data fixtures and helpers
+  - Add tests for uncovered code paths
+  - Create reusable test fixtures as needed
+- [ ] Test parsing robustness with real-world crontab formats
+  - Mixed user/system formats
+  - Unusual comment formats
+  - Malformed entries
+- [ ] Edge case testing with focus on leap years
+  - Test Feb 29th scheduling
+  - Test year boundary conditions
+  - Create mock data for date-specific scenarios
 
 **Estimated Time**: 4-5 hours  
 **Dependencies**: Tasks 1-11
