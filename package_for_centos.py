@@ -260,6 +260,18 @@ echo "4. Testing JSON output:"
 ./cron-query --format json "jobs on weekdays" | head -10
 echo
 
+echo "5. Testing system crontab source:"
+./cron-query --source system "jobs at 2 AM"
+echo
+
+echo "6. Testing all sources:"
+./cron-query --source all "jobs on Monday"
+echo
+
+echo "7. Testing verbose output with system source:"
+./cron-query --source system --verbose "jobs that run daily" | grep -A 2 "Loading system"
+echo
+
 echo "All tests completed successfully!"
 """)
     
