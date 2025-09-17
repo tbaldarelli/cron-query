@@ -401,7 +401,7 @@ def _load_etc_crontab() -> List[CronJob]:
         FileNotFoundError: If /etc/crontab doesn't exist
         PermissionError: If /etc/crontab can't be read
     """
-    etc_crontab_path = "/etc/crontab"
+    etc_crontab_path = os.path.join(os.path.sep, "etc", "crontab")
     
     if not os.path.exists(etc_crontab_path):
         logger.info(f"No {etc_crontab_path} found")
@@ -449,7 +449,7 @@ def _load_cron_d_directory() -> List[CronJob]:
     import os
     import glob
     
-    cron_d_path = "/etc/cron.d"
+    cron_d_path = os.path.join(os.path.sep, "etc", "cron.d")
     
     if not os.path.exists(cron_d_path):
         logger.info(f"No {cron_d_path} directory found")
