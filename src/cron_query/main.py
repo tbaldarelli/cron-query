@@ -13,7 +13,15 @@ from . import __version__, __description__
 from .cron_loader import load_user_crontab, load_crontab_from_file, CronJob
 from .query_parser import parse_query, QueryCriteria, format_criteria_description
 from .schedule_analyzer import find_matching_jobs
-from .output_formatter import format_query_results, format_error_message, validate_output_format
+from .output_formatter import (
+    format_query_results, 
+    format_error_message, 
+    validate_output_format,
+    get_supported_formats,
+    get_predefined_templates,
+    get_template_help,
+    is_color_supported
+)
 
 
 def setup_logging(verbose: bool = False) -> None:
@@ -73,6 +81,7 @@ Examples:
     
     parser.add_argument(
         'query',
+        nargs='?',
         help='Natural language query about cron job schedules. '
              'Supports basic queries ("Saturday", "8 AM"), '
              'relative dates ("this Saturday", "next Monday"), '
@@ -80,11 +89,13 @@ Examples:
              'and combined queries ("this Saturday after 10 AM").'
     )
     
+    # Get supported formats dynamically
+    supported_formats = get_supported_formats()
     parser.add_argument(
         '--format',
-        choices=['list', 'table', 'json'],
+        choices=supported_formats,
         default='list',
-        help='Output format (default: list)'
+        help=f'Output format (default: list). Available: {", ".join(supported_formats)}'
     )
     
     parser.add_argument(
@@ -103,7 +114,53 @@ Examples:
     parser.add_argument(
         '--verbose', '-v',
         action='store_true',
-        help='Enable verbose logging'
+        help='Enable verbose logging and detailed cron parsing information'
+    )
+    
+    # Color options
+    parser.add_argument(
+        '--no-color',
+        action='store_true',
+        help='Disable colored output'
+    )
+    
+    # Template options
+    parser.add_argument(
+        '--template',
+        help='Custom output template or predefined template name (compact, detailed, summary, verbose)'
+    )
+    
+    parser.add_argument(
+        '--list-templates',
+        action='store_true',
+        help='List available predefined templates'
+    )
+    
+    parser.add_argument(
+        '--template-help',
+        action='store_true',
+        help='Show template help with available variables'
+    )
+    
+    # Pagination options
+    parser.add_argument(
+        '--page-size',
+        type=int,
+        default=20,
+        help='Number of results per page (default: 20)'
+    )
+    
+    parser.add_argument(
+        '--page',
+        type=int,
+        default=1,
+        help='Page number to display (default: 1)'
+    )
+    
+    parser.add_argument(
+        '--no-pager',
+        action='store_true',
+        help='Disable pagination'
     )
     
     parser.add_argument(
@@ -147,15 +204,59 @@ def load_cron_jobs(source: str, file_path: Optional[str], logger: logging.Logger
     return jobs
 
 
-def process_query(query: str, output_format: str, source: str, file_path: Optional[str] = None) -> int:
+def handle_template_info_requests(args) -> Optional[int]:
+    """
+    Handle --list-templates and --template-help requests.
+    
+    Args:
+        args: Parsed command line arguments
+        
+    Returns:
+        Exit code if handled, None if not handled
+    """
+    if args.list_templates:
+        print("Available predefined templates:")
+        print()
+        templates = get_predefined_templates()
+        for name, template in templates.items():
+            print(f"  {name:<10} - {template}")
+        print()
+        print("Use --template-help for more details on template variables.")
+        return 0
+    
+    if args.template_help:
+        print(get_template_help())
+        return 0
+    
+    return None
+
+
+def process_query(
+    query: str, 
+    output_format: str, 
+    source: str, 
+    file_path: Optional[str] = None,
+    use_colors: bool = True,
+    page_size: int = 20,
+    page: int = 1,
+    use_pager: bool = True,
+    template: Optional[str] = None,
+    verbose: bool = False
+) -> int:
     """
     Process the user's query and return results.
     
     Args:
         query: Natural language query string
-        output_format: Output format (list, table, json)
+        output_format: Output format (list, table, json, csv, yaml)
         source: Crontab source (user, system, all)
         file_path: Path to crontab file (optional, takes precedence over source)
+        use_colors: Whether to use colored output
+        page_size: Number of items per page
+        page: Current page number
+        use_pager: Whether to paginate output
+        template: Custom template string or predefined template name
+        verbose: Whether to show verbose information
         
     Returns:
         Exit code (0 for success, non-zero for error)
@@ -166,6 +267,10 @@ def process_query(query: str, output_format: str, source: str, file_path: Option
     logger.info(f"Processing query: '{query}'")
     logger.info(f"Output format: {output_format}")
     logger.info(f"Source: {source}")
+    logger.info(f"Colors: {use_colors}")
+    logger.info(f"Pagination: {use_pager} (page {page}, size {page_size})")
+    if template:
+        logger.info(f"Template: {template}")
     
     try:
         # Validate output format
@@ -223,6 +328,17 @@ def process_query(query: str, output_format: str, source: str, file_path: Option
             print(error_msg)
             return 1
         
+        # Resolve template if provided
+        resolved_template = None
+        if template:
+            predefined_templates = get_predefined_templates()
+            if template in predefined_templates:
+                resolved_template = predefined_templates[template]
+                logger.info(f"Using predefined template '{template}': {resolved_template}")
+            else:
+                resolved_template = template
+                logger.info(f"Using custom template: {resolved_template}")
+        
         # Format and display results
         try:
             execution_time = time.time() - start_time
@@ -230,7 +346,13 @@ def process_query(query: str, output_format: str, source: str, file_path: Option
                 matching_jobs, 
                 criteria, 
                 output_format=output_format,
-                show_next_runs=True
+                show_next_runs=True,
+                use_colors=use_colors,
+                page_size=page_size,
+                page=page,
+                use_pager=use_pager,
+                template=resolved_template,
+                verbose=verbose
             )
             print(output)
         except Exception as e:
@@ -269,6 +391,15 @@ def main(argv: Optional[list] = None) -> int:
     parser = create_parser()
     args = parser.parse_args(argv)
     
+    # Handle template info requests first
+    template_result = handle_template_info_requests(args)
+    if template_result is not None:
+        return template_result
+    
+    # Validate that query is provided if not using template info commands
+    if not args.query:
+        parser.error("query argument is required (unless using --list-templates or --template-help)")
+    
     # Set up logging
     setup_logging(args.verbose)
     logger = logging.getLogger(__name__)
@@ -276,8 +407,22 @@ def main(argv: Optional[list] = None) -> int:
     logger.debug("Starting cron-query application")
     logger.debug(f"Arguments: {args}")
     
+    # Determine color usage
+    use_colors = not args.no_color and is_color_supported()
+    
     try:
-        return process_query(args.query, args.format, args.source, args.file)
+        return process_query(
+            query=args.query,
+            output_format=args.format,
+            source=args.source,
+            file_path=args.file,
+            use_colors=use_colors,
+            page_size=args.page_size,
+            page=args.page,
+            use_pager=not args.no_pager,
+            template=args.template,
+            verbose=args.verbose
+        )
     except KeyboardInterrupt:
         logger.info("Interrupted by user")
         return 130
