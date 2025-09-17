@@ -10,7 +10,7 @@ import time
 from typing import Optional, List
 
 from . import __version__, __description__
-from .cron_loader import load_user_crontab, load_crontab_from_file, CronJob
+from .cron_loader import load_user_crontab, load_crontab_from_file, load_system_crontabs, CronJob
 from .query_parser import parse_query, QueryCriteria, format_criteria_description
 from .schedule_analyzer import find_matching_jobs
 from .output_formatter import (
@@ -194,14 +194,41 @@ def load_cron_jobs(source: str, file_path: Optional[str], logger: logging.Logger
         logger.info(f"Loaded {len(jobs)} cron jobs from file")
         return jobs
     
-    if source in ['system', 'all']:
-        raise ValueError(f"Source '{source}' is not yet supported. Currently only 'user' is supported.")
-    
-    logger.info(f"Loading cron jobs from {source} crontab")
-    jobs = load_user_crontab()
-    logger.info(f"Loaded {len(jobs)} cron jobs")
-    
-    return jobs
+    # Handle different source types
+    if source == 'user':
+        logger.info(f"Loading cron jobs from {source} crontab")
+        jobs = load_user_crontab()
+        logger.info(f"Loaded {len(jobs)} cron jobs from user crontab")
+        return jobs
+    elif source == 'system':
+        logger.info(f"Loading cron jobs from {source} crontab")
+        jobs = load_system_crontabs()
+        logger.info(f"Loaded {len(jobs)} cron jobs from system crontabs")
+        return jobs
+    elif source == 'all':
+        logger.info(f"Loading cron jobs from all sources")
+        jobs = []
+        
+        # Load user crontab
+        try:
+            user_jobs = load_user_crontab()
+            jobs.extend(user_jobs)
+            logger.info(f"Loaded {len(user_jobs)} cron jobs from user crontab")
+        except Exception as e:
+            logger.warning(f"Failed to load user crontab: {e}")
+        
+        # Load system crontabs
+        try:
+            system_jobs = load_system_crontabs()
+            jobs.extend(system_jobs)
+            logger.info(f"Loaded {len(system_jobs)} cron jobs from system crontabs")
+        except Exception as e:
+            logger.warning(f"Failed to load system crontabs: {e}")
+        
+        logger.info(f"Loaded {len(jobs)} total cron jobs from all sources")
+        return jobs
+    else:
+        raise ValueError(f"Invalid source '{source}'. Supported sources: user, system, all")
 
 
 def handle_template_info_requests(args) -> Optional[int]:

@@ -7,6 +7,7 @@ and parse individual cron lines into structured data objects.
 """
 
 import logging
+import os
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -131,11 +132,39 @@ def parse_cron_line(line: str, source: str = "user", user: Optional[str] = None)
             )
         
         # Handle standard cron format: minute hour day_of_month month day_of_week command
-        parts = original_line.split(None, 5)
-        if len(parts) < 6:
-            raise CronParseError(f"Invalid cron format - expected 6 fields, got {len(parts)}: {original_line}")
+        # Or system cron format: minute hour day_of_month month day_of_week user command
+        parts = original_line.split()
         
-        minute, hour, day_of_month, month, day_of_week, command = parts
+        if len(parts) < 6:
+            raise CronParseError(f"Invalid cron format - expected 6 or 7 fields, got {len(parts)}: {original_line}")
+        elif len(parts) == 6:
+            # Standard user crontab format (6 fields)
+            minute, hour, day_of_month, month, day_of_week, command = parts
+            parsed_user = user
+        else:
+            # Could be standard format with arguments or system format
+            minute, hour, day_of_month, month, day_of_week = parts[:5]
+
+            # If explicitly reading system sources, prefer system format parsing when field 6 looks like a username
+            potential_user = parts[5]
+            looks_like_path = (potential_user.startswith('/') or potential_user.startswith('./') or potential_user.startswith('~') or '=' in potential_user)
+            if source == 'system' and len(parts) >= 7 and not looks_like_path:
+                parsed_user = potential_user
+                command = ' '.join(parts[6:])
+            else:
+                # Heuristic: if 6th field looks like a command path or starts with special chars,
+                # treat it as standard format with command arguments
+                if looks_like_path:
+                    parsed_user = user
+                    command = ' '.join(parts[5:])
+                elif potential_user in ['root', 'www-data', 'nobody', 'daemon', 'mail', 'news', 'uucp', 'proxy', 'backup', 'list', 'man'] and len(parts) >= 7:
+                    # Recognized system user
+                    parsed_user = potential_user
+                    command = ' '.join(parts[6:])
+                else:
+                    # Default to standard format with arguments
+                    parsed_user = user
+                    command = ' '.join(parts[5:])
         
         # Basic field validation
         _validate_cron_fields(minute, hour, day_of_month, month, day_of_week)
@@ -148,7 +177,7 @@ def parse_cron_line(line: str, source: str = "user", user: Optional[str] = None)
             day_of_week=day_of_week,
             command=command,
             raw_line=original_line,
-            user=user,
+            user=parsed_user,
             source=source
         )
         
@@ -279,7 +308,7 @@ def load_crontab_from_file(file_path: str) -> List[CronJob]:
         with open(file_path, 'r', encoding='utf-8') as f:
             for line_number, line in enumerate(f, 1):
                 try:
-                    job = parse_cron_line(line.strip(), source="file", user=None)
+                    job = parse_cron_line(line.strip(), source="system", user=None)
                     if job:  # Skip None results (comments, empty lines, etc.)
                         jobs.append(job)
                         logger.debug(f"Parsed job from line {line_number}: {job.raw_line}")
@@ -308,6 +337,233 @@ def load_crontab_from_file(file_path: str) -> List[CronJob]:
         raise CronParseError(f"No valid cron jobs found in {file_path}. All lines had parsing errors.")
     
     return jobs
+
+
+def load_system_crontabs() -> List[CronJob]:
+    """
+    Load system-wide crontab entries from /etc/crontab and /etc/cron.d/*.
+    
+    On Windows, this function provides mock data for development purposes.
+    On Linux, it reads actual system crontab files.
+    
+    Returns:
+        List of CronJob objects from system crontabs
+        
+    Raises:
+        PermissionError: If system files cannot be read due to permissions
+        CronParseError: If critical parsing errors occur
+    """
+    logger.info("Loading system crontab entries")
+    
+    # Mock data for Windows development
+    if sys.platform == 'win32':
+        logger.info("Running on Windows - using mock system crontab data")
+        return _get_mock_system_crontab_data()
+    
+    cron_jobs = []
+    errors = []
+    
+    # Load /etc/crontab
+    try:
+        etc_crontab_jobs = _load_etc_crontab()
+        cron_jobs.extend(etc_crontab_jobs)
+        logger.info(f"Loaded {len(etc_crontab_jobs)} jobs from /etc/crontab")
+    except Exception as e:
+        error_msg = f"Failed to load /etc/crontab: {e}"
+        logger.warning(error_msg)
+        errors.append(error_msg)
+    
+    # Load /etc/cron.d/* files
+    try:
+        cron_d_jobs = _load_cron_d_directory()
+        cron_jobs.extend(cron_d_jobs)
+        logger.info(f"Loaded {len(cron_d_jobs)} jobs from /etc/cron.d/")
+    except Exception as e:
+        error_msg = f"Failed to load /etc/cron.d/ directory: {e}"
+        logger.warning(error_msg)
+        errors.append(error_msg)
+    
+    if not cron_jobs and errors:
+        raise PermissionError(f"Could not load any system crontabs. Errors: {'; '.join(errors)}")
+    
+    logger.info(f"Total system cron jobs loaded: {len(cron_jobs)}")
+    return cron_jobs
+
+
+def _load_etc_crontab() -> List[CronJob]:
+    """
+    Load cron jobs from /etc/crontab.
+    
+    Returns:
+        List of CronJob objects
+        
+    Raises:
+        FileNotFoundError: If /etc/crontab doesn't exist
+        PermissionError: If /etc/crontab can't be read
+    """
+    etc_crontab_path = "/etc/crontab"
+    
+    if not os.path.exists(etc_crontab_path):
+        logger.info(f"No {etc_crontab_path} found")
+        return []
+    
+    logger.debug(f"Reading {etc_crontab_path}")
+    
+    jobs = []
+    parse_errors = []
+    
+    try:
+        with open(etc_crontab_path, 'r', encoding='utf-8') as f:
+            for line_number, line in enumerate(f, 1):
+                try:
+                    job = parse_cron_line(line.strip(), source="system", user=None)
+                    if job:
+                        jobs.append(job)
+                        logger.debug(f"Parsed system job from {etc_crontab_path}:{line_number}: {job.raw_line}")
+                except CronParseError as e:
+                    error_msg = f"{etc_crontab_path}:{line_number}: {e}"
+                    logger.debug(error_msg)
+                    parse_errors.append(error_msg)
+    
+    except PermissionError:
+        raise PermissionError(f"Permission denied reading {etc_crontab_path}")
+    except Exception as e:
+        raise CronParseError(f"Error reading {etc_crontab_path}: {e}")
+    
+    if parse_errors:
+        logger.debug(f"Encountered {len(parse_errors)} parsing errors in {etc_crontab_path}")
+    
+    return jobs
+
+
+def _load_cron_d_directory() -> List[CronJob]:
+    """
+    Load cron jobs from all files in /etc/cron.d/ directory.
+    
+    Returns:
+        List of CronJob objects
+        
+    Raises:
+        PermissionError: If directory can't be accessed
+    """
+    import os
+    import glob
+    
+    cron_d_path = "/etc/cron.d"
+    
+    if not os.path.exists(cron_d_path):
+        logger.info(f"No {cron_d_path} directory found")
+        return []
+    
+    if not os.path.isdir(cron_d_path):
+        logger.warning(f"{cron_d_path} exists but is not a directory")
+        return []
+    
+    logger.debug(f"Scanning {cron_d_path} directory")
+    
+    jobs = []
+    
+    try:
+        # Get all files in /etc/cron.d/ (excluding hidden files)
+        pattern = os.path.join(cron_d_path, "*")
+        cron_files = [f for f in glob.glob(pattern) if os.path.isfile(f) and not os.path.basename(f).startswith('.')]
+        
+        logger.debug(f"Found {len(cron_files)} files in {cron_d_path}")
+        
+        for cron_file in sorted(cron_files):
+            try:
+                file_jobs = _load_cron_d_file(cron_file)
+                jobs.extend(file_jobs)
+                logger.debug(f"Loaded {len(file_jobs)} jobs from {cron_file}")
+            except Exception as e:
+                logger.warning(f"Failed to load {cron_file}: {e}")
+                # Continue processing other files
+    
+    except PermissionError:
+        raise PermissionError(f"Permission denied accessing {cron_d_path}")
+    except Exception as e:
+        logger.warning(f"Error scanning {cron_d_path}: {e}")
+    
+    return jobs
+
+
+def _load_cron_d_file(file_path: str) -> List[CronJob]:
+    """
+    Load cron jobs from a single file in /etc/cron.d/.
+    
+    Args:
+        file_path: Path to the cron.d file
+        
+    Returns:
+        List of CronJob objects
+        
+    Raises:
+        PermissionError: If file can't be read
+        CronParseError: If file has critical parsing errors
+    """
+    jobs = []
+    parse_errors = []
+    
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            for line_number, line in enumerate(f, 1):
+                try:
+                    job = parse_cron_line(line.strip(), source="system", user=None)
+                    if job:
+                        jobs.append(job)
+                        logger.debug(f"Parsed job from {file_path}:{line_number}: {job.raw_line}")
+                except CronParseError as e:
+                    error_msg = f"{file_path}:{line_number}: {e}"
+                    logger.debug(error_msg)
+                    parse_errors.append(error_msg)
+    
+    except PermissionError:
+        raise PermissionError(f"Permission denied reading {file_path}")
+    except UnicodeDecodeError as e:
+        raise CronParseError(f"File encoding error in {file_path}: {e}")
+    except Exception as e:
+        raise CronParseError(f"Error reading {file_path}: {e}")
+    
+    if parse_errors:
+        logger.debug(f"Encountered {len(parse_errors)} parsing errors in {file_path}")
+    
+    return jobs
+
+
+def _get_mock_system_crontab_data() -> List[CronJob]:
+    """
+    Provide mock system crontab data for Windows development.
+    
+    Returns:
+        List of mock system CronJob objects
+    """
+    mock_system_lines = [
+        "# System crontab for mock testing",
+        "SHELL=/bin/bash",
+        "PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin",
+        "",
+        "# Example /etc/crontab entries",
+        "17 * * * * root cd / && run-parts --report /etc/cron.hourly",
+        "25 6 * * * root test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily )",
+        "47 6 * * 7 root test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )",
+        "52 6 1 * * root test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )",
+        "",
+        "# Example /etc/cron.d/ entries",
+        "0 2 * * * backup /usr/local/bin/system-backup.sh",
+        "*/10 * * * * monitor /usr/local/bin/check-services.sh",
+        "30 3 * * 0 admin /usr/local/bin/weekly-maintenance.sh",
+    ]
+    
+    cron_jobs = []
+    for line in mock_system_lines:
+        try:
+            cron_job = parse_cron_line(line, source="system", user=None)
+            if cron_job:
+                cron_jobs.append(cron_job)
+        except CronParseError as e:
+            logger.debug(f"Mock system data parse error: {e}")
+    
+    return cron_jobs
 
 
 def _get_mock_crontab_data(user: Optional[str] = None) -> List[CronJob]:

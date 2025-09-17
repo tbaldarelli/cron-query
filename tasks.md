@@ -127,12 +127,12 @@
 **Priority**: Low  
 **Status**: ✅ COMPLETED - Full advanced output feature set implemented
 
-### Task 9: System Crontab Support
-- [ ] Implement `load_system_crontabs()` (Linux-specific)
-- [ ] Handle `/etc/crontab` parsing
-- [ ] Support `/etc/cron.d/*` directory scanning
-- [ ] Add `--source` option (user|system|all)
-- [ ] Permission handling and error reporting
+### Task 9: System Crontab Support ✅
+- [x] Implement `load_system_crontabs()` (Linux-specific)
+- [x] Handle `/etc/crontab` parsing
+- [x] Support `/etc/cron.d/*` directory scanning
+- [x] Add `--source` option (user|system|all)
+- [x] Permission handling and error reporting
 
 **Estimated Time**: 4-5 hours  
 **Dependencies**: Task 2  
@@ -151,13 +151,19 @@
 
 ## Phase 3: Polish & Documentation
 
-Task: Cross-Platform Compatibility
-Add .gitattributes for consistent line endings
-Update packaging script to force Unix line endings
-Test deployment workflow from Windows → Linux
-Document cross-platform development practices
+### Task 11: Cross-Platform Compatibility
+- [ ] Add `.gitattributes` for consistent line endings
+- [ ] Update packaging script to force Unix line endings
+- [ ] Test deployment workflow from Windows → Linux
+- [ ] Document cross-platform development practices
+- [ ] Validate script execution permissions on Linux
+- [ ] Test path handling across platforms
 
-### Task 11: Comprehensive Testing
+**Estimated Time**: 2-3 hours  
+**Dependencies**: Task 10  
+**Priority**: High (Essential for Linux deployment)
+
+### Task 12: Comprehensive Testing
 - [ ] Achieve >90% test coverage
 - [ ] Add integration tests with real cron data
 - [ ] Performance benchmarking
@@ -165,10 +171,10 @@ Document cross-platform development practices
 - [ ] Test data fixtures and helpers
 
 **Estimated Time**: 4-5 hours  
-**Dependencies**: Tasks 1-10  
+**Dependencies**: Tasks 1-11
 **Priority**: Medium
 
-### Task 12: Documentation & Packaging
+### Task 13: Documentation & Packaging
 - [ ] Complete `README.md` with usage examples
 - [ ] Add installation instructions
 - [ ] Create man page or extended help
@@ -176,32 +182,14 @@ Document cross-platform development practices
 - [ ] Version tagging and release notes
 
 **Estimated Time**: 2-3 hours  
-**Dependencies**: Task 11  
+**Dependencies**: Task 12  
 **Priority**: Low
 
 ## Phase 4: Learning Implementations (Future)
 
-### Task 13: Go Implementation
-- [ ] Research Go cron parsing libraries
-- [ ] Implement equivalent functionality in Go
-- [ ] Performance comparison with Python version
-- [ ] Document lessons learned
+*Note: Learning tasks have been moved to a separate `learning_tasks.md` file.*
 
-**Estimated Time**: 8-10 hours  
-**Dependencies**: Task 12  
-**Priority**: Learning/Optional
-
-### Task 14: Rust Implementation
-- [ ] Research Rust cron parsing crates
-- [ ] Implement equivalent functionality in Rust
-- [ ] Memory safety and performance analysis
-- [ ] Document lessons learned and comparisons
-
-**Estimated Time**: 10-12 hours  
-**Dependencies**: Task 13  
-**Priority**: Learning/Optional
-
-### Task 15: Context-Aware Next Runs Enhancement
+### Task 14: Context-Aware Next Runs Enhancement
 - [ ] Enhance "Next runs" display to show runs on the queried date/context
 - [ ] For specific date queries ("this Saturday"), prioritize Saturday runs over chronological
 - [ ] For time range queries ("after 6 PM"), show next runs within that time range
@@ -233,14 +221,15 @@ Enhanced: Query "this Saturday after 6 PM" shows "Next runs on Saturday: 2025-09
 - **Target**: End of Week 2
 - **Progress**: 50% complete (2/4 tasks done)
 
-### Milestone 3: Production Ready (Tasks 11-12)
+### Milestone 3: Production Ready (Tasks 11-13)
+- Cross-platform compatibility
 - Comprehensive testing
 - Complete documentation
 - Ready for distribution
 - **Target**: End of Week 3
 
-### Milestone 4: Learning Phase (Tasks 13-14)
-- Alternative implementations
+### Milestone 4: Learning Phase
+- Alternative implementations (see `learning_tasks.md`)
 - Performance comparisons
 - **Target**: Ongoing learning project
 

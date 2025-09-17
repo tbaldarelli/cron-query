@@ -169,7 +169,7 @@ class TestParseCronLine:
     
     def test_parse_invalid_format_too_few_fields(self):
         """Test error handling for too few fields."""
-        with pytest.raises(CronParseError, match="expected 6 fields, got 3"):
+        with pytest.raises(CronParseError, match="expected 6 or 7 fields, got 3"):
             parse_cron_line("0 8 *")
     
     def test_parse_invalid_special_keyword(self):
