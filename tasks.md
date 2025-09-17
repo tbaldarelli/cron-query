@@ -139,10 +139,10 @@
 **Priority**: Medium
 
 ### Task 10: Linux Integration & Testing
-- [ ] Test on actual CentOS system via SSH
-- [ ] Validate real crontab parsing
-- [ ] Performance testing with large crontab files
-- [ ] Cross-platform compatibility fixes
+- [x] Test on actual CentOS system via SSH
+- [x] Validate real crontab parsing
+- [x] Performance testing with large crontab files
+- [x] Cross-platform compatibility fixes
 - [ ] Documentation updates
 
 **Estimated Time**: 3-4 hours  
@@ -197,6 +197,12 @@
 - [ ] Update output formatter to calculate context-relevant schedules
 - [ ] Maintain backward compatibility with existing next run behavior
 - [ ] Add tests for context-aware scheduling display
+
+Natural language query improvements (from Task 10 testing):
+- [ ] Support frequency keywords like "daily" (map to DOW/DOM-agnostic schedules)
+- [ ] Accept numeric day-of-week (0-6, with 0/7 as Sunday)
+- [ ] Handle three-letter day abbreviations (e.g., Sun, Mon, Tue)
+- [ ] Improve handling for broad queries like "at every time" or "what jobs run daily"
 
 **Example Enhancement**:
 Current: `0 * * * *` shows "Next runs: 2025-09-16 19:00, 2025-09-16 20:00"
