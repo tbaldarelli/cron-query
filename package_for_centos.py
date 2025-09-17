@@ -272,6 +272,16 @@ echo "7. Testing verbose output with system source:"
 ./cron-query --source system --verbose "jobs that run daily" | grep -A 2 "Loading system"
 echo
 
+echo "8. Testing template functionality:"
+./cron-query --list-templates
+echo
+./cron-query --template compact "jobs at midnight"
+echo
+./cron-query --template detailed "jobs on weekends"
+echo
+./cron-query --template-help | head -5
+echo
+
 echo "All tests completed successfully!"
 """)
     
