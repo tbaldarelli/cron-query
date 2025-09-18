@@ -18,7 +18,7 @@ def read_long_description():
 
 setup(
     name="cron-query",
-    version="0.1.0",
+    version="1.0.0",
     author="Tony Baldarelli",
     description="Query crontab schedules with natural language",
     long_description=read_long_description(),
@@ -33,7 +33,6 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
@@ -41,10 +40,13 @@ setup(
         "Topic :: System :: Systems Administration",
         "Topic :: Utilities",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     install_requires=[
         "croniter>=1.0.0",
         "python-dateutil>=2.8.0",
+        "colorama>=0.4.3",
+        "tabulate>=0.8.7",
+        "pyyaml>=5.3.1",  # Optional for YAML output
     ],
     extras_require={
         "dev": [
