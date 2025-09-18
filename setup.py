@@ -65,4 +65,7 @@ setup(
         "Bug Reports": "https://github.com/tonybaldarelli/cron-query/issues",
         "Source": "https://github.com/tonybaldarelli/cron-query",
     },
+    data_files=[
+        ('share/man/man1', ['man/man1/cron-query.1']),
+    ],
 )
