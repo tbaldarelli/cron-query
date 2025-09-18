@@ -7,5 +7,5 @@ the intricate logic of day-of-month vs day-of-week intersections.
 """
 
 __version__ = "0.1.0"
-__author__ = "Tony Baldarelli"
+__author__ = "Anthony Baldarelli"
 __description__ = "Query crontab schedules with natural language"

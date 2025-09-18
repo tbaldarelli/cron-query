@@ -19,7 +19,8 @@ def read_long_description():
 setup(
     name="cron-query",
     version="1.0.0",
-    author="Tony Baldarelli",
+    author="Anthony Baldarelli",
+    author_email="tony.baldarelli@gmail.com",
     description="Query crontab schedules with natural language",
     long_description=read_long_description(),
     long_description_content_type="text/markdown",
