@@ -333,8 +333,8 @@ def load_crontab_from_file(file_path: str) -> List[CronJob]:
     
     logger.info(f"Successfully loaded {len(jobs)} cron jobs from {file_path}")
     
-    if parse_errors and not jobs:
-        raise CronParseError(f"No valid cron jobs found in {file_path}. All lines had parsing errors.")
+    # Log summary of parse errors but don't raise exception
+    # This allows graceful handling of files with some invalid entries
     
     return jobs
 

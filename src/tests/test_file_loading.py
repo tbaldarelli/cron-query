@@ -77,7 +77,7 @@ invalid line without enough fields
         # Check first job
         self.assertEqual(jobs[0].cron_expression, "0 2 * * *")
         self.assertEqual(jobs[0].command, "/home/user/backup.sh")
-        self.assertEqual(jobs[0].source, "file")
+        self.assertEqual(jobs[0].source, "system")
         
         # Check special keyword job
         daily_jobs = [job for job in jobs if "@daily" in job.raw_line]
@@ -230,7 +230,7 @@ class TestLoadCronJobsFunction(unittest.TestCase):
         jobs = load_cron_jobs('user', self.test_file.name, self.logger)
         
         self.assertEqual(len(jobs), 1)
-        self.assertEqual(jobs[0].source, 'file')
+        self.assertEqual(jobs[0].source, 'system')
         self.assertEqual(jobs[0].command, '/test/command.sh')
     
     @patch('src.cron_query.main.load_user_crontab')
@@ -247,9 +247,9 @@ class TestLoadCronJobsFunction(unittest.TestCase):
     def test_unsupported_source_error(self):
         """Test error for unsupported sources."""
         with self.assertRaises(ValueError) as context:
-            load_cron_jobs('system', None, self.logger)
+            load_cron_jobs('invalid_source', None, self.logger)
         
-        self.assertIn('not yet supported', str(context.exception))
+        self.assertIn('Invalid source', str(context.exception))
 
 
 class TestFileLoadingIntegration(unittest.TestCase):

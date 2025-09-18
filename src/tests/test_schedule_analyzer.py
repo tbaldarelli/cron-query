@@ -197,7 +197,51 @@ class TestRunsOnDayOfWeek:
         job = CronJob("0", "8", "15", "*", "*", "/monthly/job.sh", "0 8 15 * * /monthly/job.sh")
         
         # This should use the complex logic to check if 15th falls on target days
-        # For testing, we'll assume it can match (depends on calendar)
+# For testing, we'll assume it can match (depends on calendar)
+
+
+class TestLeapYearHandling:
+    """Test cases for leap year handling."""
+    
+    def test_feb_29_jobs(self):
+        """Test jobs that run on February 29th."""
+        job = CronJob("0", "8", "29", "2", "*", "/leap-day.sh", "0 8 29 2 * /leap-day.sh")
+        
+        # Test with a specific date in a leap year
+        leap_date = datetime(2024, 2, 29)
+        next_runs = get_next_runs(job, count=3, start_time=leap_date)
+        
+        assert len(next_runs) == 3
+        assert next_runs[0].strftime("%Y-%m-%d") == "2024-02-29"
+        assert next_runs[1].strftime("%Y-%m-%d") == "2028-02-29"
+        assert next_runs[2].strftime("%Y-%m-%d") == "2032-02-29"
+    
+    def test_end_of_month_jobs(self):
+        """Test jobs that run on last day of month during leap years."""
+        job = CronJob("0", "8", "L", "2", "*", "/last-day.sh", "0 8 L 2 * /last-day.sh")
+        
+        # Check in both leap and non-leap years
+        leap_date = datetime(2024, 2, 1)
+        non_leap_date = datetime(2025, 2, 1)
+        
+        leap_runs = get_next_runs(job, count=1, start_time=leap_date)
+        non_leap_runs = get_next_runs(job, count=1, start_time=non_leap_date)
+        
+        assert leap_runs[0].strftime("%Y-%m-%d") == "2024-02-29"
+        assert non_leap_runs[0].strftime("%Y-%m-%d") == "2025-02-28"
+    
+    def test_crossing_leap_boundaries(self):
+        """Test next run calculations across leap year boundaries."""
+        # Job that runs on March 1st
+        job = CronJob("0", "8", "1", "3", "*", "/march-first.sh", "0 8 1 3 * /march-first.sh")
+        
+        # Start just before Feb 29 in a leap year
+        start_date = datetime(2024, 2, 28)
+        next_runs = get_next_runs(job, count=2, start_time=start_date)
+        
+        # Should properly handle the leap day when calculating next March 1st
+        assert next_runs[0].strftime("%Y-%m-%d") == "2024-03-01"
+        assert next_runs[1].strftime("%Y-%m-%d") == "2025-03-01"
         result = runs_on_day_of_week(job, {6})  # Saturday
         assert isinstance(result, bool)  # Just check it returns a boolean
     

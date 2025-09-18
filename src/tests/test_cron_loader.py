@@ -197,6 +197,57 @@ class TestParseCronLine:
             parse_cron_line("99 25 32 13 8 /invalid/cmd")
 
 
+class TestParsingRobustness:
+    """Test parsing robustness with real-world edge cases."""
+    
+    def test_multiple_whitespace(self):
+        """Test handling of multiple/mixed whitespace."""
+        test_cases = [
+            "0   8\t*  *\t\t*   /cmd",  # Mixed spaces and tabs
+            "0\t8 * * *\t/cmd",         # Tab separated
+            "0      8 * * * /cmd"        # Multiple spaces
+        ]
+        for line in test_cases:
+            job = parse_cron_line(line)
+            assert job is not None
+            assert job.hour == "8"
+            assert job.command == "/cmd"
+    
+    def test_command_with_special_chars(self):
+        """Test commands with special characters and spaces."""
+        test_cases = [
+            "0 8 * * * /path/with spaces/cmd",       # Spaces in path
+            "0 8 * * * /path/with#hash/cmd",        # Hash in path
+            "0 8 * * * /bin/sh -c 'echo test'",    # Shell command
+            "0 8 * * * python3 -m script --arg=val" # Command with args
+        ]
+        for line in test_cases:
+            job = parse_cron_line(line)
+            assert job is not None
+            assert job.command == line.split(' ', 5)[-1]
+    
+    def test_complex_time_fields(self):
+        """Test complex time field combinations."""
+        test_cases = [
+            "1-10,30,45 8,10-14/2 1-7,15,L * MON-FRI /cmd",  # Complex ranges
+            "*/10 8/2 1,15,L * 1-5 /cmd",                     # Steps and Last day
+            "@hourly /cmd && @daily /cmd2"                     # Multiple commands
+        ]
+        for line in test_cases:
+            job = parse_cron_line(line)
+            assert job is not None
+            assert job.is_valid
+    
+    def test_quoting_styles(self):
+        """Test different command quoting styles."""
+        test_cases = [
+            '0 8 * * * /bin/sh -c "echo \"test\""',  # Double quotes
+            "0 8 * * * /bin/sh -c 'echo \'test\''"    # Single quotes
+        ]
+        for line in test_cases:
+            job = parse_cron_line(line)
+            assert job is not None
+
 class TestValidateCronFields:
     """Test cases for _validate_cron_fields function."""
     

@@ -81,7 +81,7 @@ class TestCLIArgumentParsing(unittest.TestCase):
     def test_missing_query(self):
         """Test missing query argument."""
         with self.assertRaises(SystemExit):
-            self.parser.parse_args(['--format', 'table'])
+            main(['--format', 'table'])
     
     def test_complex_argument_combination(self):
         """Test complex argument combinations."""
@@ -112,7 +112,7 @@ class TestLoadCronJobs(unittest.TestCase):
         ]
         mock_load.return_value = mock_jobs
         
-        jobs = load_cron_jobs('user', self.logger)
+        jobs = load_cron_jobs('user', None, self.logger)
         
         self.assertEqual(len(jobs), 2)
         self.assertEqual(jobs[0].command, "echo 'Monday job'")
@@ -122,14 +122,9 @@ class TestLoadCronJobs(unittest.TestCase):
     def test_unsupported_source(self):
         """Test error handling for unsupported sources."""
         with self.assertRaises(ValueError) as context:
-            load_cron_jobs('system', self.logger)
+            load_cron_jobs('invalid_source', None, self.logger)
         
-        self.assertIn("not yet supported", str(context.exception))
-        
-        with self.assertRaises(ValueError) as context:
-            load_cron_jobs('all', self.logger)
-        
-        self.assertIn("not yet supported", str(context.exception))
+        self.assertIn("Invalid source", str(context.exception))
     
     @patch('src.cron_query.main.load_user_crontab')
     def test_load_jobs_exception(self, mock_load):
@@ -138,7 +133,7 @@ class TestLoadCronJobs(unittest.TestCase):
         
         # Should not raise - error handling is in process_query
         with self.assertRaises(Exception):
-            load_cron_jobs('user', self.logger)
+            load_cron_jobs('user', None, self.logger)
 
 
 class TestProcessQuery(unittest.TestCase):
@@ -253,7 +248,7 @@ class TestProcessQuery(unittest.TestCase):
         self.assertEqual(result, 1)
         output_text = output.getvalue()
         self.assertIn('Could not understand query', output_text)
-        self.assertIn('Try queries like', output_text)  # Should include suggestions
+        self.assertIn('Examples of supported queries', output_text)  # Should include suggestions
     
     @patch('src.cron_query.main.load_cron_jobs')
     @patch('src.cron_query.main.parse_query')
@@ -319,7 +314,13 @@ class TestMainEntryPoint(unittest.TestCase):
         
         result = main(['--format', 'json', '--verbose', 'test query'])
         self.assertEqual(result, 0)
-        mock_process.assert_called_once_with('test query', 'json', 'user')
+        # Just check that it was called once with the right query parameter
+        mock_process.assert_called_once()
+        args, kwargs = mock_process.call_args
+        self.assertEqual(kwargs['query'], 'test query')
+        self.assertEqual(kwargs['output_format'], 'json')
+        self.assertEqual(kwargs['source'], 'user')
+        self.assertTrue(kwargs['verbose'])
     
     @patch('src.cron_query.main.process_query')
     def test_keyboard_interrupt(self, mock_process):

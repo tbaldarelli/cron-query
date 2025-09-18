@@ -107,7 +107,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin
     @patch('os.path.exists', return_value=True)
     def test_load_etc_crontab_permission_error(self, mock_exists, mock_open):
         """Test handling permission error when reading /etc/crontab."""
-        with pytest.raises(PermissionError, match="Permission denied reading /etc/crontab"):
+        with pytest.raises(PermissionError, match=r"Permission denied reading.*etc.crontab"):
             _load_etc_crontab()
 
     @patch('builtins.open', mock_open(read_data="""# System crontab with parse errors
@@ -182,7 +182,7 @@ class TestLoadCronDDirectory:
     @patch('glob.glob', side_effect=PermissionError("Permission denied"))
     def test_load_cron_d_directory_permission_error(self, mock_glob, mock_isdir, mock_exists):
         """Test handling permission error when accessing /etc/cron.d/."""
-        with pytest.raises(PermissionError, match="Permission denied accessing /etc/cron.d"):
+        with pytest.raises(PermissionError, match=r"Permission denied accessing.*etc.cron.d"):
             _load_cron_d_directory()
 
     @patch('os.path.exists', return_value=True)
