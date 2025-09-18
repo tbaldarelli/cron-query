@@ -1,0 +1,50 @@
+.TH CRON-QUERY 1 "September 2025" "cron-query 1.0.0" "User Commands"
+.SH NAME
+cron-query \- query crontab schedules with natural language
+.SH SYNOPSIS
+.B cron-query
+[\fIOPTIONS\fR] [\fIQUERY\fR]
+.SH DESCRIPTION
+.B cron-query
+is a command-line tool that helps users understand when cron jobs will execute by parsing
+crontab files and providing natural language descriptions of job schedules.
+.SH OPTIONS
+.TP
+.BR \-h ", " \-\-help
+Show this help message and exit
+.TP
+.BR \-v ", " \-\-version
+Show program version and exit
+.TP
+.BR \-f ", " \-\-file " \fIFILE\fR"
+Read crontab from FILE instead of default location
+.TP
+.BR \-\-format " \fIFORMAT\fR"
+Output format (text, json, or yaml). Default is text
+.SH QUERY EXAMPLES
+.TP
+.BR "cron-query 'jobs on weekdays'"
+Show all jobs that run on weekdays (Monday-Friday)
+.TP
+.BR "cron-query 'jobs at midnight'"
+Show all jobs that run at midnight (00:00)
+.TP
+.BR "cron-query 'jobs every 5 minutes'"
+Show all jobs that run every 5 minutes
+.TP
+.BR "cron-query 'jobs on last day of month'"
+Show all jobs that run on the last day of each month
+.SH FILES
+.TP
+.I /etc/crontab
+System-wide crontab file
+.TP
+.I /var/spool/cron/*
+User crontab files
+.SH AUTHOR
+Written by Anthony Baldarelli.
+.SH REPORTING BUGS
+Report bugs at: https://github.com/tonybaldarelli/cron-query/issues
+.SH COPYRIGHT
+Copyright \(co 2025 Anthony Baldarelli.
+License MIT.
