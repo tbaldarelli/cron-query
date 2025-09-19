@@ -644,25 +644,33 @@ def _format_yaml_output(
     return yaml.dump(result, default_flow_style=False, indent=2, sort_keys=False)
 
 
+def _get_bullet_point() -> str:
+    """Get the appropriate bullet point character based on terminal type."""
+    term = os.getenv('TERM', '').lower()
+    if term in ['xterm', 'xterm-color', 'xterm-16color', 'xterm-256color']:
+        return '*'  # Use ASCII bullet for xterm
+    return '•'  # Use Unicode bullet for other terminals
+
 def _format_empty_results(criteria: QueryCriteria, colors: Optional[ColorConfig] = None) -> str:
     """Format output for empty results."""
     if colors is None:
         colors = ColorConfig(enabled=False)
         
     query_desc = format_criteria_description(criteria)
+    bullet = _get_bullet_point()
     
     lines = [
         f"{colors.warning}No jobs found matching '{query_desc}'.{colors.reset}",
         "",
         "This could mean:",
-        "• No cron jobs are scheduled for the specified criteria",
-        "• The crontab is empty or inaccessible", 
-        "• The query didn't match the expected format",
+        f"{bullet} No cron jobs are scheduled for the specified criteria",
+        f"{bullet} The crontab is empty or inaccessible", 
+        f"{bullet} The query didn't match the expected format",
         "",
         "Try:",
-        "• Check if you have any cron jobs: crontab -l",
-        "• Use a broader query (e.g., 'which jobs run on weekdays')",
-        "• Verify the query format matches supported patterns"
+        f"{bullet} Check if you have any cron jobs: crontab -l",
+        f"{bullet} Use a broader query (e.g., 'which jobs run on weekdays')",
+        f"{bullet} Verify the query format matches supported patterns"
     ]
     
     return "\n".join(lines)
@@ -821,8 +829,11 @@ def format_error_message(error: Exception, query: str = "") -> str:
     Returns:
         Formatted error message
     """
+    bullet = _get_bullet_point()
+    error_symbol = 'X' if os.getenv('TERM', '').lower().startswith('xterm') else '❌'
+    
     lines = [
-        f"❌ Error: {str(error)}",
+        f"{error_symbol} Error: {str(error)}",
         ""
     ]
     
@@ -834,9 +845,9 @@ def format_error_message(error: Exception, query: str = "") -> str:
     
     lines.extend([
         "Troubleshooting:",
-        "• Check that your query format is supported",
-        "• Verify you have permission to read crontab",
-        "• Try a simpler query to test basic functionality",
+        f"{bullet} Check that your query format is supported",
+        f"{bullet} Verify you have permission to read crontab",
+        f"{bullet} Try a simpler query to test basic functionality",
         "",
         "Examples of supported queries:",
         "  cron-query 'Saturday'",
