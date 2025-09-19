@@ -317,6 +317,25 @@ def parse_day_query(query: str) -> Optional[QueryCriteria]:
     # Remove common prefixes that don't affect meaning
     query = _normalize_query(query)
     
+    # Check for basic time references (today, tomorrow, yesterday)
+    basic_time_refs = ['today', 'tomorrow', 'yesterday']
+    for time_ref in basic_time_refs:
+        if query == time_ref or query == f'jobs {time_ref}':
+            today = datetime.now()
+            if time_ref == 'yesterday':
+                target_date = today - timedelta(days=1)
+            elif time_ref == 'tomorrow':
+                target_date = today + timedelta(days=1)
+            else:  # today
+                target_date = today
+            
+            return QueryCriteria(
+                query_type=QueryType.DAY_BASED,
+                raw_query=query,
+                is_specific_date=True,
+                specific_date=target_date.replace(hour=0, minute=0, second=0, microsecond=0)
+            )
+
     # Check for weekdays/weekends
     if 'weekday' in query or 'week day' in query:
         return QueryCriteria(
