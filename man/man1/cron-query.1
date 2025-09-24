@@ -1,4 +1,4 @@
-.TH CRON-QUERY 1 "September 2025" "cron-query 1.0.0" "User Commands"
+.TH CRON-QUERY 1 "September 2025" "cron-query 1.1.0" "User Commands"
 .SH NAME
 cron-query \- query crontab schedules with natural language
 .SH SYNOPSIS
@@ -7,7 +7,8 @@ cron-query \- query crontab schedules with natural language
 .SH DESCRIPTION
 .B cron-query
 is a command-line tool that helps users understand when cron jobs will execute by parsing
-crontab files and providing natural language descriptions of job schedules.
+crontab files and providing natural language descriptions of job schedules. Features include
+Unicode-aware output formatting, customizable templates, and cross-platform compatibility.
 .SH OPTIONS
 .TP
 .BR \-h ", " \-\-help
@@ -20,27 +21,112 @@ Show program version and exit
 Read crontab from FILE instead of default location
 .TP
 .BR \-\-format " \fIFORMAT\fR"
-Output format (text, json, or yaml). Default is text
-.SH QUERY EXAMPLES
+Output format: list, table, json, csv, or yaml. Default is list
 .TP
-.BR "cron-query 'jobs on weekdays'"
+.BR \-\-source " \fISOURCE\fR"
+Crontab source: user, system, or all. Default is user
+.TP
+.BR \-\-template " \fITEMPLATE\fR"
+Custom output template or predefined template name (compact, detailed, summary, verbose)
+.TP
+.BR \-\-list\-templates
+List available predefined templates
+.TP
+.BR \-\-template\-help
+Show template help with available variables
+.TP
+.BR \-\-no\-color
+Disable colored output
+.TP
+.BR \-\-no\-pager
+Disable pagination
+.TP
+.BR \-\-page\-size " \fINUMBER\fR"
+Number of results per page. Default is 20
+.TP
+.BR \-\-page " \fINUMBER\fR"
+Page number to display. Default is 1
+.TP
+.BR \-\-verbose
+Enable verbose logging and detailed cron parsing information
+.SH QUERY EXAMPLES
+.SS Basic Queries
+.TP
+.BR "cron-query 'weekdays'"
 Show all jobs that run on weekdays (Monday-Friday)
 .TP
-.BR "cron-query 'jobs at midnight'"
-Show all jobs that run at midnight (00:00)
+.BR "cron-query 'Saturday'"
+Show all jobs that run on Saturday
 .TP
-.BR "cron-query 'jobs every 5 minutes'"
-Show all jobs that run every 5 minutes
+.BR "cron-query '8 AM'"
+Show all jobs that run at 8:00 AM
 .TP
-.BR "cron-query 'jobs on last day of month'"
-Show all jobs that run on the last day of each month
+.BR "cron-query 'after 5 PM'"
+Show all jobs that run after 5:00 PM
+.SS Relative Date Queries
+.TP
+.BR "cron-query 'this Saturday'"
+Show all jobs that run on this coming Saturday
+.TP
+.BR "cron-query 'next Monday'"
+Show all jobs that run on next Monday
+.TP
+.BR "cron-query 'today'"
+Show all jobs that run today
+.SS Template Usage
+.TP
+.BR "cron-query 'weekdays' --template compact"
+Show weekday jobs in compact format
+.TP
+.BR "cron-query 'Saturday' --template '{bullet} {expression} {next} {command}'"
+Show Saturday jobs with custom template using special characters
 .SH FILES
 .TP
 .I /etc/crontab
 System-wide crontab file
 .TP
+.I /etc/cron.d/*
+System cron directory files
+.TP
 .I /var/spool/cron/*
 User crontab files
+.SH ENVIRONMENT
+.TP
+.B CRON_QUERY_FORCE_ASCII
+If set to 1, force ASCII characters instead of Unicode symbols
+.TP
+.B CRON_QUERY_FORCE_UNICODE
+If set to 1, force Unicode characters even if terminal detection suggests otherwise
+.SH TEMPLATE VARIABLES
+.TP
+Custom templates support the following variables:
+.TP
+.BR {index}
+Job number
+.TP
+.BR {expression}
+Cron expression
+.TP
+.BR {command}
+Command to execute
+.TP
+.BR {description}
+Human-readable schedule description
+.TP
+.BR {next_run}
+Next scheduled run time
+.TP
+.BR {bullet}
+Bullet point character (• or *)
+.TP
+.BR {error}
+Error symbol character (❌ or X)
+.TP
+.BR {next}
+Next arrow character (→ or ->)
+.TP
+.BR {prev}
+Previous arrow character (← or <-)
 .SH AUTHOR
 Written by Anthony Baldarelli.
 .SH REPORTING BUGS

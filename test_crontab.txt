@@ -1,22 +1,201 @@
-# Sample crontab file for testing
-# This is a comment and will be ignored
+# Get lists of who has what checked out, v10_odbc
+V10_HOME=/home/wms/v10_odbc
 
-# Daily backup at 2 AM
-0 2 * * * /home/user/backup.sh
+30 03 * * * $V10_HOME/bin/cronStartTsm.sh > $V10_HOME/std/log/crontab/cronStartTsm.log 2>&1 &
+#30 04 * * * $V10_HOME/bin/cronRestartTsm.sh > $V10_HOME/std/log/crontab/cronRestartTsm.log 2>&1 &
 
-# Weekly report on Mondays at 9 AM  
-0 9 * * 1 /home/user/weekly-report.py
+# Every night at 10 pm, run SKU report and send to CNH
+##00 22 * * * $V10_HOME/bin/cronGenCnhSku.sh > $V10_HOME/std/log/crontab/cronGenCnhSku.log 2>&1 &
 
-# Check disk space every hour
-0 * * * * /home/user/check-disk.sh
+# Every minute, get transactions for CNH
+##* * * * * $V10_HOME/bin/cronGetRacTXN.sh > $V10_HOME/std/log/crontab/cronGetRacTXN.log 2>&1 &
 
-# Special keywords
-@daily /home/user/daily-task.sh
-@weekly /home/user/weekly-cleanup.sh
+# Every day at 4am, get COUNT for CNH
+##00 05 * * * $V10_HOME/bin/cronGetRacCNT.sh > $V10_HOME/std/log/crontab/cronGetRacCNT.log 2>&1 &
 
-# Multiple jobs on weekdays
-30 8 * * 1-5 /home/user/morning-routine.sh
-0 17 * * 1-5 /home/user/end-of-day.sh
+# Every morning, generate order reports to vendors CNH RAC only
+##00 5 * * 1-5 $V10_HOME/bin/cronGenSupplierOrders.sh > $V10_HOME/std/log/crontab/cronGenSupplierOrders.log 2>&1 &
 
-# Weekend job
-0 10 * * 6,0 /home/user/weekend-maintenance.sh
+# Every 30 minutes, check disk space
+#PERFORMANCE#0,30 * * * * $V10_HOME/bin/cronCheckDiskSpace.sh > $V10_HOME/std/log/crontab/cronCheckDiskSpace.log 2>&1 &
+
+# Every 60 minutes, check disk space
+0 * * * * $V10_HOME/bin/cronCheckDiskSpace.sh > $V10_HOME/std/log/crontab/cronCheckDiskSpace.log 2>&1 &
+
+# every 10 minutes, check WMS connections
+#PERFORMANCE#0,10,20,30,40,50 * * * * $V10_HOME/bin/cronCheckWmsConnections.sh > $V10_HOME/std/log/crontab/cronCheckWmsConnections.log 2>&1 &
+
+# every 30 minutes between 7 am and 7 pm, check WMS connections
+0,30 7-18 * * * $V10_HOME/bin/cronCheckWmsConnections.sh > $V10_HOME/std/log/crontab/cronCheckWmsConnections.log 2>&1 &
+0 19 * * * $V10_HOME/bin/cronCheckWmsConnections.sh > $V10_HOME/std/log/crontab/cronCheckWmsConnections.log 2>&1 &
+
+# Every 5 minutes between 5 am and 9 pm, check uptime
+0,5,10,15,20,25,30,35,40,45,50,55 5-21 * * * $V10_HOME/bin/cronuptime.sh > $V10_HOME/std/log/crontab/cronuptime.log 2>&1
+
+# every 5 minutes between 4 am and 11:55 pm , check MySql access
+#PERFORMANCE#0,5,10,15,20,25,30,35,40,45,50,55 4-23 * * * $V10_HOME/bin/checkMySqlAccess.sh > $V10_HOME/std/log/crontab/checkMySqlAccess.log 2>&1
+
+# every 20 minutes between 7 am and 7 pm, check MySql access
+0,20,40 7-18 * * * $V10_HOME/bin/checkMySqlAccess.sh > $V10_HOME/std/log/crontab/checkMySqlAccess.log 2>&1
+0 19 * * * $V10_HOME/bin/checkMySqlAccess.sh > $V10_HOME/std/log/crontab/checkMySqlAccess.log 2>&1
+
+00 5 * * * $V10_HOME/bin/cronRptPoOpenBalance.sh > $V10_HOME/std/log/crontab/cronRptPoOpenBalance.log 2>&1
+
+01 00 * * * $V10_HOME/bin/cronRptMissingSkuOfShopifyWholesale.sh > $V10_HOME/std/log/crontab/cronRptMissingSkuOfShopifyWholesale.log 2>&1
+
+# Every morning, generate consignment order reports to planner FORTIVE CTL only
+34 9  * * 1-5 $V10_HOME/bin/cronGenNotfConsignment.sh > $V10_HOME/std/log/crontab/cronGenNotfConsignmentAM.log 2>&1 &
+34 13 * * 1-5 $V10_HOME/bin/cronGenNotfConsignment.sh > $V10_HOME/std/log/crontab/cronGenNotfConsignmentPM.log 2>&1 &
+
+6 00 * * 2-6 $V10_HOME/bin/runMrpDriver.sh > $V10_HOME/std/log/crontab/runMrpDriver.log 2>&1
+0 22 * * 1-5 $V10_HOME/bin/cronCheckKOSSMrpForDONE.sh > $V10_HOME/std/log/crontab/cronCheckKOSSMrpForDONE_$(date "+\%a\%H\%M").log 2>&1
+30 20,21 * * 1-5 $V10_HOME/bin/cronCheckKOSSMrpForDONE.sh > $V10_HOME/std/log/crontab/cronCheckKOSSMrpForDONE_$(date "+\%a\%H\%M").log 2>&1
+
+0 06 * * 1-5 $V10_HOME/bin/runTmaMrpDriver.sh > $V10_HOME/std/log/crontab/runTmaMrpDriver.log 2>&1
+0 07 * * 1-5 $V10_HOME/bin/cronRptTmaProdSchedAndInv.sh > $V10_HOME/std/log/crontab/cronRptTmaProdSchedAndInv7.log 2>&1
+##Chg to 2 shifts##5 22 * * 1-5 $V10_HOME/bin/cronRptTmaProdSchedAndInv.sh > $V10_HOME/std/log/crontab/cronRptTmaProdSchedAndInv22.log 2>&1
+5 16 * * 1-5 $V10_HOME/bin/cronRptTmaProdSchedAndInv.sh > $V10_HOME/std/log/crontab/cronRptTmaProdSchedAndInv14.log 2>&1
+0 16 * * 1-5 $V10_HOME/bin/runTmaMrpDriverShift2.sh > $V10_HOME/std/log/crontab/runTmaMrpDriverShift2.log 2>&1
+##Chg to 2 shifts##0 22 * * 1-5 $V10_HOME/bin/runTmaMrpDriverShift3.sh > $V10_HOME/std/log/crontab/runTmaMrpDriverShift3.log 2>&1
+
+30 20 * * 1-5 $V10_HOME/bin/runLoadWkSO.sh > $V10_HOME/std/log/crontab/runLoadWkSO.log 2>&1
+
+00 19 * * 6 $V10_HOME/bin/runLoadHistSO.sh > $V10_HOME/std/log/crontab/runLoadHistSO.log 2>&1
+ 
+01 10 * * * $V10_HOME/bin/cronScanAuditRptAm.sh > $V10_HOME/std/log/crontab/cronScanAuditRptAm.log 2>&1
+
+31 14 * * * $V10_HOME/bin/cronScanAuditRptPm.sh > $V10_HOME/std/log/crontab/cronScanAuditRptPm.log 2>&1
+
+59 23 * * * $V10_HOME/bin/cronScanAuditRptPm2.sh > $V10_HOME/std/log/crontab/cronScanAuditRptPm2.log 2>&1
+
+##00 12 * * 1-5 $V10_HOME/bin/cronKOSSShopifyBoh.sh > $V10_HOME/std/log/crontab/cronKOSSShopifyBoh12pm.log 2>&1
+
+##53 13 * * 1-5 $V10_HOME/bin/cronKOSSTestFix.sh > $V10_HOME/std/log/crontab/cronKOSSTestFix12pm.log 2>&1
+
+##19 19 * * 1-5 $V10_HOME/bin/cronKOSSShopifyBoh.sh > $V10_HOME/std/log/crontab/cronKOSSShopifyBoh7pm.log 2>&1
+
+00 06 * * * $V10_HOME/bin/cronCheatSheet.sh > $V10_HOME/std/log/crontab/cronCheatSheet.log 2>&1
+
+01 18 * * 1-5 $V10_HOME/bin/cronCellTreatInterface.sh > $V10_HOME/std/log/crontab/cronCellTreatInterface.log 2>&1
+##58 23 * * * $V10_HOME/bin/cronSpenceShipTrans.sh > $V10_HOME/std/log/crontab/cronSpenceShipTrans.log 2>&1
+##58 23 * * * $V10_HOME/bin/cronSpenceNewOrderTrans.sh > $V10_HOME/std/log/crontab/cronSpenceNewOrderTrans.log 2>&1
+###*/10 * * * 1-5 $V10_HOME/bin/cronForneyInterface.sh > $V10_HOME/std/log/crontab/cronForneyInterface_$(date "+\%a\%H\%M\%S").log 2>&1
+
+## Every hour Monday through Friday, retrigger spence order and Receipt transactions
+##0 8-17 * * 1-5 $V10_HOME/bin/cronSpenceRetriggerInterface.sh > $V10_HOME/std/log/crontab/cronSpenceRetriggerInterface.log 2>&1
+##0 8-17 * * 1-5 $V10_HOME/bin/cronSpenceRetriggerReceipt.sh > $V10_HOME/std/log/crontab/cronSpenceRetriggerReceipt.log 2>&1
+
+## Every 7 am Monday, Batch Late shipment email for Celltreat
+###0 7 * * 1 $V10_HOME/bin/processCellTreatBNOTEmails.sh > $V10_HOME/std/log/processCellTreatBNOTEmails.log 2>&1
+
+## Every 8 am Sunday, produce new sales forecast for Celltreat or Koss
+30 18 * * 0 $V10_HOME/bin/runSalesProjection.sh PEP > $V10_HOME/std/log/runSalesProjectionCelltreat.log 2>&1
+##30 11 * * 0 $V10_HOME/bin/runSalesProjectionKoss.sh COL > $V10_HOME/std/log/runSalesProjectionKoss.log 2>&1
+
+###0 19 5 * * $V10_HOME/bin/cronCalcuRatingBcd.sh > $V10_HOME/std/log/crontab/cronCalcuRatingBcd.log 2>&1
+
+0 6 1 * * $V10_HOME/bin/getSiteData.sh > $V10_HOME/std/log/crontab/getSiteData.log 2>&1
+
+##0 10-18 * * 1-5 $V10_HOME/bin/cronCheckInterface.sh SPENCE > $V10_HOME/std/log/crontab/cronCheckInterface.SPENCE.log 2>&1
+
+0 1 1 * * $V10_HOME/bin/storePlanSnapshots.sh ALL > $V10_HOME/std/log/crontab/storePlanSnapshots.log 2>&1
+
+## update weekends at end of second and third quarters for all databases, all calendars
+0 5 30 6,9 * $V10_HOME/bin/cronUpdateWeekends.sh > $V10_HOME/std/log/crontab/cronUpdateWeekends.JunSep.log 2>&1
+
+## update weekends at end of first and fourth quarters for all databases, all calendars
+0 5 31 3,12 * $V10_HOME/bin/cronUpdateWeekends.sh > $V10_HOME/std/log/crontab/cronUpdateWeekends.MarDec.log 2>&1
+
+##Below 2 jobs not running due to planners work remote 3/24/20
+##Planners are not able to change cards on the floor
+##00 22 * * 0-4 $V10_HOME/bin/cronLogEndingPlans.sh > $V10_HOME/std/log/crontab/cronLogEndingPlans.log 2>&1
+
+##5 0 * * * $V10_HOME/bin/cronExpireActivePlans.sh > $V10_HOME/std/log/crontab/cronExpireActivePlans.log 2>&1
+
+## Monthly customer tasks
+##1 0 20 12 * $V10_HOME/bin/cronPeriodEndCustomerActivity.sh ALL > $V10_HOME/std/log/crontab/cronPeriodEndCustomerActivity_$(date "+\%a").log 2>&1
+
+## Monthly customer tasks, runs every day from 1st to 7th of month until we hit Saturday
+15 1 1-7 * * $V10_HOME/bin/cronPeriodEndCustomerActivity.sh ALL > $V10_HOME/std/log/crontab/cronPeriodEndCustomerActivity_$(date "+\%a").log 2>&1
+
+## Rerun, normally commented out.  Change day of week and month so it will run outside of first 7 days of month
+## Below set to run in first 12 days of month, on a Friday
+##57 17 1-12 * * $V10_HOME/bin/cronPeriodEndCustomerActivityRerun.sh ALL 5 12 > $V10_HOME/std/log/crontab/cronPeriodEndCustomerActivityRerun_$(date "+\%a").log 2>&1
+
+##0 17 1-7 * * $V10_HOME/bin/cronKossMonthlyForecast.sh COL > $V10_HOME/std/log/crontab/cronKossMonthlyForecast_$(date "+\%a").log 2>&1
+##for 02/05/2023 rerun cronKossMonthlyForecast##
+##38 20 1-7 * * $V10_HOME/bin/cronKossMonthlyForecast.sh COL > $V10_HOME/std/log/crontab/cronKossMonthlyForecast_$(date "+\%a")_Rerun.log 2>&1
+
+## Monthly customer tasks, runs every day from 1st to 7th of month until we hit Sunday
+## special case - run on Sunday, thus set second param to 0
+#10 16 1-7 * * $V10_HOME/bin/cronPeriodEndCustomerActivity.sh ALL 0 > $V10_HOME/std/log/crontab/cronPeriodEndCustomerActivity_$(date "+\%a").log 2>&1
+
+0 22 * * * $V10_HOME/bin/cronFixSpikeModelBarcode.sh > $V10_HOME/std/log/crontab/cronFixSpikeModelBarcode.log 2>&1
+
+## Regular inventory management updates, daily at 3 am
+0 2 * * * $V10_HOME/bin/runKanbanInvMgmt.sh ALL > $V10_HOME/std/log/crontab/runKanbanInvMgmt.log 2>&1
+
+##04 9 * * * $V10_HOME/bin/kossShopifyUpdInv.sh > $V10_HOME/std/log/kossShopifyUpdInv.log 2>&1
+
+5 15 * * 1-5 $V10_HOME/bin/cronRptFulfilledRetailOrders.sh > $V10_HOME/std/log/cronRptFulfilledRetailOrders.log 2>&1
+
+0 7 * * 1-5 $V10_HOME/bin/cronRptFulfilledWholesaleOrders.sh > $V10_HOME/std/log/crontab/cronRptFulfilledWholesaleOrders_$(date "+\%a\%H\%M\%S").log 2>&1
+
+## Check for some order differences related to KOSS and ATP and WHS
+##01 00 * * * $V10_HOME/bin/cronKossATPWHSDiff.sh > $V10_HOME/std/log/crontab/cronKossATPWHSDiff.log 2>&1
+
+## Purely to test email issue##51 13 * * * $V10_HOME/bin/cronCheatSheetTest.sh > $V10_HOME/std/log/crontab/cronCheatSheetTest.$(date "+\%a\%H\%M\%S").log 2>&1
+
+## Excess order processing
+55 23 * * * $V10_HOME/bin/cronFortiveExcessOrderProcessing.sh > $V10_HOME/std/log/crontab/cronFortiveExcessOrderProcessing.log 2>&1
+
+## Check xmlClient
+## TODO: maybe change hour to 0-2,4-23, so we skip the system restart time
+0 * * * * $V10_HOME/bin/cronCheckXmlClient.sh > $V10_HOME/std/log/crontab/cronCheckXmlClient.log 2>&1
+
+##58 23 * * * $V10_HOME/bin/cronRestartVeederXmlClient.sh > $V10_HOME/std/log/crontab/cronRestartVeederXmlClient.log 2>&1
+
+00 6 * * 1-5 $V10_HOME/bin/cronRptFulfilledAfterHours.sh > $V10_HOME/std/log/crontab/cronRptFulfilledAfterHours_$(date "+\%a").log 2>&1
+
+00 12 * * 1-5 $V10_HOME/bin/getKossWsNoCust.sh > $V10_HOME/std/log/crontab/getKossWsNoCust_$(date "+\%a\%H\%M\%S").log 2>&1
+30 15 * * 1-5 $V10_HOME/bin/getKossWsNoCust.sh > $V10_HOME/std/log/crontab/getKossWsNoCust_$(date "+\%a\%H\%M\%S").log 2>&1
+
+55 23 31 12 * $V10_HOME/bin/cronAdvanceTmaPlanStartEnd.sh > $V10_HOME/std/log/crontab/cronAdvanceTmaPlanStartEnd_$(date "+\%Y\%m\%d\%H\%M\%S").log 2>&1
+## TEST run, worked##35 12 * * * $V10_HOME/bin/cronAdvanceTmaPlanStartEnd.sh > $V10_HOME/std/log/crontab/cronAdvanceTmaPlanStartEnd_$(date "+\%Y\%m\%d\%H\%M\%S").log 2>&1
+
+30 1 * * 6 $V10_HOME/bin/cronRestartTomcat.sh > $V10_HOME/std/log/crontab/cronRestartTomcat.log 2>&1
+
+0 23 * * 1-5 $V10_HOME/bin/cronSaveStaticSkuInv.sh ALL YES >  $V10_HOME/std/log/crontab/cronSaveStaticSkuInv_ALL_Upd_$(date "+\%a").log 2>&1
+
+0 22 * * * $V10_HOME/bin/cronForneyCheckAndUpdateData.sh  >  $V10_HOME/std/log/crontab/cronForneyCheckAndUpdateData_$(date "+\%a").log 2>&1
+0 23 * * * $V10_HOME/bin/cronAngelArmorCheckAndUpdateData.sh  >  $V10_HOME/std/log/crontab/cronAngelArmorCheckAndUpdateData_$(date "+\%a").log 2>&1
+30 18 * * * $V10_HOME/bin/cronForneyRestartKanbanUsage.sh  >  $V10_HOME/std/log/crontab/cronForneyRestartKanbanUsage_$(date "+\%a\%H").log 2>&1
+0 12,15 * * * $V10_HOME/bin/cronForneyRestartKanbanUsage.sh  >  $V10_HOME/std/log/crontab/cronForneyRestartKanbanUsage_$(date "+\%a\%H").log 2>&1
+30 20 * * * $V10_HOME/bin/cronForneyCheckInvAdj.sh  >  $V10_HOME/std/log/crontab/cronForneyCheckInvAdj_$(date "+\%a").log 2>&1
+0 21 * * * $V10_HOME/bin/cronForneyCheckInvAdj.sh  >  $V10_HOME/std/log/crontab/cronForneyCheckInvAdj_$(date "+\%a")_Rerun.log 2>&1
+0 17 * * 1-5 $V10_HOME/bin/cronForneyCheckPendAprCalcu.sh >  $V10_HOME/std/log/crontab/cronForneyCheckPendAprCalcu_$(date "+\%a").log 2>&1
+0 17 * * 1-5 $V10_HOME/bin/cronAngelArmorCheckPendAprCalcu.sh >  $V10_HOME/std/log/crontab/cronAngelArmorCheckPendAprCalcu_$(date "+\%a").log 2>&1
+0 20 * * 1-5 $V10_HOME/bin/cronForneyXCheckPloPplSku.sh   >  $V10_HOME/std/log/crontab/cronForneyXCheckPloPplSku_$(date "+\%a").log 2>&1
+0 20 * * 1-5 $V10_HOME/bin/cronAngelArmorXCheckPloPplSku.sh   >  $V10_HOME/std/log/crontab/cronAngelArmorXCheckPloPplSku_$(date "+\%a").log 2>&1
+1 0 * * * $V10_HOME/bin/cronForneyActivateSupplier.sh   >  $V10_HOME/std/log/crontab/cronForneyActivateSupplier_$(date "+\%a").log 2>&1
+30 01 * * * $V10_HOME/bin/cronForneyGenRopUsageTxn.sh   >  $V10_HOME/std/log/crontab/cronForneyGenRopUsageTxn_$(date "+\%a").log 2>&1
+
+## Moved to cronForneyCheckAndUpdateData.sh
+##12 22 * * * $V10_HOME/bin/cronForneyLoadInvLocQty.sh STE -U   >  $V10_HOME/std/log/crontab/cronForneyLoadInvLocQty_$(date "+\%a").log 2>&1
+0 19 * * 6 $V10_HOME/bin/cronForneyDoPlanIohReconciliation.sh STE -U >  $V10_HOME/std/log/crontab/cronForneyDoPlanIohReconciliation_$(date "+\%a").log 2>&1
+
+###0 4 * * 6 $V10_HOME/bin/cronRerunVeederLastLeadTimePlanForecast.sh   >  $V10_HOME/std/log/crontab/cronRerunVeederLastLeadTimePlanForecast.log 2>&1
+
+0 4 * * * $V10_HOME/bin/cronCheckWebClients.sh   >  $V10_HOME/std/log/crontab/cronCheckWebClients.log 2>&1
+
+##DISABLED 9/5/2025##30 21 * * * $V10_HOME/bin/checkUpdVeederUssPrl.sh YES > $V10_HOME/std/log/crontab/checkUpdVeederUssPrl_$(date "+\%a").log 2>&1
+
+18 0 * * * $V10_HOME/bin/cronExpireActivePlansAngelArmor.sh > $V10_HOME/std/log/crontab/cronExpireActivePlansAngelArmor_$(date "+\%a").log 2>&1
+
+##Only For Testing##40 13 * * * $V10_HOME/bin/cronAngelArmorCheckAndFixBPOQtys.sh > $V10_HOME/std/log/crontab/cronAngelArmorCheckAndFixBPOQtys_$(date "+\%a\%H\%M\%S").log 2>&1
+
+# Every weekday morning at 7 am, generate pending PO order reports for angel
+0 7  * * 1-5 $V10_HOME/bin/cronGenAngelPendingPO.sh > $V10_HOME/std/log/crontab/cronGenAngelPendingPO_$(date "+\%a\%H\%M").log 2>&1 &
+
+# Every Sunday at 9 pm, produce BPO notifications
+0 21  * * 0 $V10_HOME/bin/cronRptAngelArmorBPONotification.sh > $V10_HOME/std/log/crontab/cronRptAngelArmorBPONotification_$(date "+\%a\%H\%M").log 2>&1 &

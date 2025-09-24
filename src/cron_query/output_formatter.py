@@ -644,12 +644,7 @@ def _format_yaml_output(
     return yaml.dump(result, default_flow_style=False, indent=2, sort_keys=False)
 
 
-def _get_bullet_point() -> str:
-    """Get the appropriate bullet point character based on terminal type."""
-    term = os.getenv('TERM', '').lower()
-    if term in ['xterm', 'xterm-color', 'xterm-16color', 'xterm-256color']:
-        return '*'  # Use ASCII bullet for xterm
-    return '•'  # Use Unicode bullet for other terminals
+from .special_chars import get_bullet_char, get_error_symbol, get_next_symbol, get_prev_symbol
 
 def _format_empty_results(criteria: QueryCriteria, colors: Optional[ColorConfig] = None) -> str:
     """Format output for empty results."""
@@ -657,7 +652,7 @@ def _format_empty_results(criteria: QueryCriteria, colors: Optional[ColorConfig]
         colors = ColorConfig(enabled=False)
         
     query_desc = format_criteria_description(criteria)
-    bullet = _get_bullet_point()
+    bullet = get_bullet_char()
     
     lines = [
         f"{colors.warning}No jobs found matching '{query_desc}'.{colors.reset}",
@@ -707,12 +702,12 @@ def _format_pagination_info(page_info: Dict[str, Any], colors: ColorConfig) -> L
     
     nav_parts = []
     if page_info['has_prev']:
-        nav_parts.append(f"{colors.cron_expr}←{colors.reset} Previous")
+        nav_parts.append(f"{colors.cron_expr}{get_prev_symbol()}{colors.reset} Previous")
     
     nav_parts.append(f"Page {colors.header}{page_info['current_page']}{colors.reset} of {colors.header}{page_info['pages']}{colors.reset}")
     
     if page_info['has_next']:
-        nav_parts.append(f"Next {colors.cron_expr}→{colors.reset}")
+        nav_parts.append(f"Next {colors.cron_expr}{get_next_symbol()}{colors.reset}")
     
     lines.append(" | ".join(nav_parts))
     
@@ -753,7 +748,12 @@ def _format_template_output(
             'command': job.command,
             'raw_line': job.raw_line,
             'user': job.user or 'N/A',
-            'source': job.source
+            'source': job.source,
+            # Special characters (Unicode-aware)
+            'bullet': get_bullet_char(),
+            'error': get_error_symbol(),
+            'next': get_next_symbol(),
+            'prev': get_prev_symbol(),
         }
         
         # Add schedule description
@@ -790,7 +790,12 @@ def _format_template_output(
             'next_run': f"{colors.next_run}{template_vars['next_run']}{colors.reset}",
             'user': template_vars['user'],
             'source': template_vars['source'],
-            'raw_line': template_vars['raw_line']
+            'raw_line': template_vars['raw_line'],
+            # Pass through special characters unchanged so they reflect environment support
+            'bullet': template_vars['bullet'],
+            'error': template_vars['error'],
+            'next': template_vars['next'],
+            'prev': template_vars['prev'],
         }
         
         # Format the template
@@ -798,9 +803,9 @@ def _format_template_output(
             formatted_line = template.format(**colored_vars)
             lines.append(formatted_line)
         except KeyError as e:
-            lines.append(f"{colors.error}Template error: Unknown variable {e}{colors.reset}")
+            lines.append(f"{get_error_symbol()} Template error: Unknown variable {e}{colors.reset}")
         except Exception as e:
-            lines.append(f"{colors.error}Template formatting error: {e}{colors.reset}")
+            lines.append(f"{get_error_symbol()} Template formatting error: {e}{colors.reset}")
         
         lines.append("")  # Blank line between jobs
     
@@ -829,8 +834,8 @@ def format_error_message(error: Exception, query: str = "") -> str:
     Returns:
         Formatted error message
     """
-    bullet = _get_bullet_point()
-    error_symbol = 'X' if os.getenv('TERM', '').lower().startswith('xterm') else '❌'
+    bullet = get_bullet_char()
+    error_symbol = get_error_symbol()
     
     lines = [
         f"{error_symbol} Error: {str(error)}",
@@ -949,11 +954,11 @@ def get_predefined_templates() -> Dict[str, str]:
         Dictionary mapping template names to template strings
     """
     return {
-        'compact': '{index}. {expression} -> {command}',
-        'detailed': '{index}. {expression}\n   Command: {command}\n   Schedule: {description}\n   Next run: {next_run}',
-        'summary': '{expression} | {description} | Next: {next_run}',
+        'compact': '{bullet} {index}. {expression} {next} {command}',
+        'detailed': '{bullet} {index}. {expression}\n   {next} Command: {command}\n   {bullet} Schedule: {description}\n   {bullet} Next run: {next_run}',
+        'summary': '{bullet} {expression} {next} {description} {bullet} Next: {next_run}',
         'csv_like': '{expression},{command},{description},{next_run}',
-        'verbose': '{index}. {expression}\n   Command: {command}\n   Description: {description}\n   User: {user} | Source: {source}\n   Next runs: {next_runs}'
+        'verbose': '{bullet} {index}. {expression}\n   {next} Command: {command}\n   {bullet} Description: {description}\n   {bullet} User: {user} {bullet} Source: {source}\n   {bullet} Next runs: {next_runs}'
     }
 
 
@@ -974,6 +979,12 @@ def get_template_help() -> str:
   {user}        - Job owner (if available)
   {source}      - Job source (user/system/file)
   {raw_line}    - Original cron line
+  
+  Special characters (Unicode-aware, auto-fallback to ASCII):
+  {bullet}      - Bullet point (• or *)
+  {error}       - Error symbol (❌ or X)
+  {next}        - Next arrow (→ or ->)
+  {prev}        - Previous arrow (← or <-)
 
 Predefined templates:
   compact   - {index}. {expression} -> {command}
@@ -982,7 +993,7 @@ Predefined templates:
   verbose   - All available information
 
 Example custom template:
-  "Job {index}: {expression} runs {description}"
+  "Job {index}: {expression} {next} {command} {bullet} Next: {next_run}"
   """
 
 

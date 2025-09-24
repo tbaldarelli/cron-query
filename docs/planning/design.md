@@ -69,18 +69,54 @@ class ScheduleAnalyzer:
 ```
 
 ### 4. Output Formatter (`output_formatter.py`)
-**Purpose**: Format results for human-readable display
+**Purpose**: Format results for human-readable display with Unicode/ASCII support
 
 **Output Formats**:
 - List view (default)
 - Table view (`--format table`)
 - JSON output (`--format json`)
+- CSV output (`--format csv`)
+- YAML output (`--format yaml`)
+
+**Template System**:
+- Predefined templates: `compact`, `detailed`, `summary`, `verbose`, `csv_like`
+- Custom template support with special character variables
+- Template variables: `{bullet}`, `{error}`, `{next}`, `{prev}`, `{index}`, `{expression}`, `{command}`, `{description}`, `{next_run}`, `{next_runs}`, `{user}`, `{source}`, `{raw_line}`
+
+### 5. Special Characters (`special_chars.py`)
+**Purpose**: Manage Unicode/ASCII character selection based on terminal capabilities
+
+**Key Features**:
+- Automatic Unicode detection via stdout encoding, locale, and environment
+- Environment variable overrides: `CRON_QUERY_FORCE_ASCII`, `CRON_QUERY_FORCE_UNICODE`
+- Consistent character mapping across all output formats
+
+```python
+class SpecialChars:
+    def __init__(self, use_unicode: Optional[bool] = None)
+    def get(self, name: str) -> str
+    
+    @property
+    def bullet(self) -> str     # • or *
+    def error(self) -> str      # ❌ or X
+    def next(self) -> str       # → or ->
+    def prev(self) -> str       # ← or <-
+
+# Convenience functions
+get_bullet_char(), get_error_symbol(), get_next_symbol(), get_prev_symbol()
+```
 
 ```
 Jobs running on Saturday:
-  - 0 2 * * 6    /path/to/backup.sh        (Every Saturday at 2:00 AM)
-  - 0 8 1 * *    /path/to/monthly.sh       (1st of month at 8:00 AM - includes Saturdays when 1st falls on Saturday)
-  - @weekly      /path/to/weekly-cleanup   (Every Sunday at midnight - does not match Saturday)
+• 1. 0 2 * * 6 → /path/to/backup.sh
+   • Schedule: Every Saturday at 2:00 AM
+   • Next run: 2025-09-28 02:00
+
+• 2. 0 8 1 * * → /path/to/monthly.sh  
+   • Schedule: 1st of month at 8:00 AM (includes Saturdays when 1st falls on Saturday)
+   • Next run: 2025-10-01 08:00
+
+Found 2 matching jobs.
 ```
 
 ## Key Libraries
@@ -113,9 +149,12 @@ parser.add_argument('--source', choices=['user', 'system', 'all'], default='user
 ## File Structure
 ```
 cron-query/
-├── requirements.md
-├── design.md
-├── tasks.md                    # Implementation task breakdown
+├── docs/
+│   └── planning/
+│       ├── requirements.md
+│       ├── design.md
+│       ├── tasks.md
+│       └── learning_tasks.md
 ├── src/
 │   ├── cron_query/
 │   │   ├── __init__.py
@@ -123,14 +162,19 @@ cron-query/
 │   │   ├── query_parser.py    # Natural language parsing
 │   │   ├── cron_loader.py     # Load crontab data
 │   │   ├── schedule_analyzer.py # Match jobs to queries
-│   │   └── output_formatter.py # Format results
+│   │   ├── output_formatter.py # Format results
+│   │   └── special_chars.py   # Unicode/ASCII character handling
 │   └── tests/
 │       ├── test_query_parser.py
 │       ├── test_schedule_analyzer.py
+│       ├── test_special_chars.py
 │       └── fixtures/
 │           └── sample_crontabs/
 ├── setup.py                   # Package setup
 ├── requirements.txt           # Python dependencies
+├── DEVELOPMENT.md             # Cross-platform development guide
+├── man/
+│   └── cron-query.1              # Man page
 └── README.md                  # Usage instructions
 ```
 
@@ -183,19 +227,24 @@ class InvalidQuery(CronQueryError): pass
 - **Rust version**: Explore memory safety and concurrent processing
 - Compare approaches and document lessons learned
 
-## Development Environment
+### Development Environment
 
 ### Local Development (Windows)
 - Develop and test basic functionality
 - Mock Linux cron behavior for initial development
+- Unicode/ASCII testing in PowerShell and WSL environments
+- Template system development and testing
 
 ### Testing Environment (CentOS via SSH)  
 - Real crontab integration testing
 - Cross-platform validation
 - Performance testing with actual system loads
+- Terminal Unicode support validation
+- System crontab parsing testing
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: 2025-09-12  
+**Document Version**: 1.1  
+**Last Updated**: 2025-09-24  
+**Status**: Updated - Added Unicode Support and Template System
 **Status**: Draft

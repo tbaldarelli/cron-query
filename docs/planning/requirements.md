@@ -4,7 +4,8 @@
 A command-line tool for querying and analyzing crontab schedules using natural language queries. The tool addresses the complexity of understanding when cron jobs will execute, particularly handling the intricate logic of day-of-month vs day-of-week intersections.
 
 ## Target Environment
-- **Platform**: Linux-based systems
+- **Platform**: Linux-based systems, Windows (development/testing with WSL or simulated crontab)
+- **Terminal Support**: Unicode-aware terminals with automatic ASCII fallback
 - **Cron Systems**: Vixie cron, cronie, systemd-cron
 - **User Context**: System administrators, developers managing cron jobs
 
@@ -44,21 +45,38 @@ A command-line tool for querying and analyzing crontab schedules using natural l
 - System cron directories (`/etc/cron.d/*`, `/etc/cron.daily/*`, etc.)
 - Multiple user crontabs (with appropriate permissions)
 
-### 4. Technical Requirements
+### 4. Output and Display Requirements
 
-#### 4.1 Cron Expression Parsing
+#### 4.1 Unicode and Character Support
+- **Unicode Characters**: Automatic detection of terminal Unicode support
+- **ASCII Fallback**: Graceful degradation to ASCII characters when Unicode unavailable
+- **Special Characters**: 
+  - Bullet points: `•` (Unicode) / `*` (ASCII)
+  - Error symbols: `❌` (Unicode) / `X` (ASCII)
+  - Navigation arrows: `→←` (Unicode) / `->←` (ASCII)
+- **Environment Controls**: Override detection with `CRON_QUERY_FORCE_ASCII` or `CRON_QUERY_FORCE_UNICODE`
+
+#### 4.2 Template System
+- **Predefined Templates**: compact, detailed, summary, verbose, csv_like
+- **Custom Templates**: Support for user-defined output formatting
+- **Special Character Variables**: `{bullet}`, `{error}`, `{next}`, `{prev}` template placeholders
+- **Dynamic Character Selection**: Template variables automatically use appropriate character set
+
+### 5. Technical Requirements
+
+#### 5.1 Cron Expression Parsing
 - **Standard Format**: `minute hour day-of-month month day-of-week command`
 - **Special Characters**: `*`, `,`, `-`, `/`, `?`
 - **Special Keywords**: `@yearly`, `@monthly`, `@weekly`, `@daily`, `@hourly`, `@reboot`
 - **Complex Logic**: Proper handling of day-of-month OR day-of-week behavior
 
-#### 4.2 Date/Time Calculations
+#### 5.2 Date/Time Calculations
 - Current date/time awareness
 - Future date projections
 - Timezone handling (system timezone)
 - Leap year considerations
 
-#### 4.3 Error Handling
+#### 5.3 Error Handling
 - Invalid cron expressions
 - Permission denied errors
 - Malformed queries
@@ -72,8 +90,10 @@ A command-line tool for querying and analyzing crontab schedules using natural l
 
 ### Usability
 - Intuitive command syntax
-- Helpful error messages
+- Helpful error messages with appropriate symbols
 - Examples in help output
+- Cross-terminal character compatibility
+- Environment variable overrides for character display
 
 ### Reliability
 - Accurate cron expression interpretation
@@ -139,6 +159,6 @@ Jobs running on Saturday:
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: 2025-09-12  
-**Status**: Draft
+**Document Version**: 1.1  
+**Last Updated**: 2025-09-24  
+**Status**: Updated - Unicode Support Added

@@ -1,4 +1,4 @@
-.TH CRON-QUERY 1 "September 2025" "cron-query 1.0.0" "User Commands"
+.TH CRON-QUERY 1 "September 2025" "cron-query 1.1.0" "User Commands"
 .SH NAME
 cron-query \- query cron schedules using natural language
 .SH SYNOPSIS
@@ -7,7 +7,8 @@ cron-query \- query cron schedules using natural language
 .SH DESCRIPTION
 .B cron-query
 allows you to query crontab schedules using natural language phrases.
-It supports querying both user and system crontabs, with various output formats.
+It supports querying both user and system crontabs, with various output formats,
+Unicode-aware character display, and customizable templates.
 .SH OPTIONS
 .TP
 .BR \-\-format " " \fIFORMAT\fR
@@ -42,6 +43,13 @@ Page number to display (default: 1)
 .TP
 .BR \-\-no\-pager
 Disable pagination
+.SH ENVIRONMENT
+.TP
+.BR CRON_QUERY_FORCE_ASCII
+If set to 1, force ASCII characters instead of Unicode symbols
+.TP
+.BR CRON_QUERY_FORCE_UNICODE
+If set to 1, force Unicode characters regardless of terminal detection
 .SH EXAMPLES
 .TP
 Basic day query:
@@ -64,6 +72,12 @@ JSON output:
 .TP
 System crontabs:
 .B cron-query --source system "jobs on weekdays"
+.TP
+Custom template with special characters:
+.B cron-query --template "{bullet} {expression} {next} {command}" "Saturday"
+.TP
+Force ASCII mode:
+.B CRON_QUERY_FORCE_ASCII=1 cron-query "weekdays"
 .SH FILES
 .TP
 .I ~/.config/cron-query/config.yaml
@@ -74,6 +88,35 @@ System crontab file
 .TP
 .I /etc/cron.d/
 System crontab directory
+.SH TEMPLATE VARIABLES
+Custom templates support the following variables:
+.TP
+.BR {index}
+Job number
+.TP
+.BR {expression}
+Cron expression
+.TP
+.BR {command}
+Command to execute
+.TP
+.BR {description}
+Human-readable schedule description
+.TP
+.BR {next_run}
+Next scheduled run time
+.TP
+.BR {bullet}
+Bullet point character (• or *)
+.TP
+.BR {error}
+Error symbol character (❌ or X)
+.TP
+.BR {next}
+Next arrow character (→ or ->)
+.TP
+.BR {prev}
+Previous arrow character (← or <-)
 .SH SEE ALSO
 .BR crontab (5),
 .BR cron (8)
