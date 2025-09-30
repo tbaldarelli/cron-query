@@ -11,8 +11,8 @@ from unittest.mock import patch, MagicMock
 from io import StringIO
 from contextlib import redirect_stdout
 
-from src.cron_query.cron_loader import load_crontab_from_file, CronParseError
-from src.cron_query.main import main, load_cron_jobs
+from cron_query.cron_loader import load_crontab_from_file, CronParseError
+from cron_query.main import main, load_cron_jobs
 
 
 class TestLoadCrontabFromFile(unittest.TestCase):
@@ -102,7 +102,7 @@ invalid line without enough fields
     def test_load_file_with_parse_errors(self):
         """Test loading file with some invalid entries."""
         # Should not raise exception, but should log warnings
-        with patch('src.cron_query.cron_loader.logger') as mock_logger:
+        with patch('cron_query.cron_loader.logger') as mock_logger:
             jobs = load_crontab_from_file(self.invalid_crontab.name)
             
             # Should still return empty list (no valid jobs)
@@ -196,7 +196,7 @@ class TestCLIFileOption(unittest.TestCase):
     def test_file_takes_precedence_over_source(self):
         """Test that --file option takes precedence over --source."""
         # Even if we specify --source system, it should use the file
-        with patch('src.cron_query.main.load_user_crontab') as mock_load_user:
+        with patch('cron_query.main.load_user_crontab') as mock_load_user:
             mock_load_user.return_value = []  # This shouldn't be called
             
             output = StringIO()
@@ -233,7 +233,7 @@ class TestLoadCronJobsFunction(unittest.TestCase):
         self.assertEqual(jobs[0].source, 'system')
         self.assertEqual(jobs[0].command, '/test/command.sh')
     
-    @patch('src.cron_query.main.load_user_crontab')
+    @patch('cron_query.main.load_user_crontab')
     def test_load_from_source_when_no_file(self, mock_load_user):
         """Test that load_cron_jobs uses source when no file specified."""
         mock_jobs = [MagicMock()]
@@ -278,34 +278,40 @@ class TestFileLoadingIntegration(unittest.TestCase):
 0 17 * * 1-5 /home/user/end-of-day.sh
 """
         
-        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.crontab') as f:
-            f.write(test_content)
-            f.flush()
+        # Use tempfile.mkdtemp for better Windows compatibility
+        import shutil
+        temp_dir = tempfile.mkdtemp()
+        test_file = os.path.join(temp_dir, "test.crontab")
+        
+        try:
+            # Write test content to file
+            with open(test_file, 'w') as f:
+                f.write(test_content)
             
-            try:
-                # Test various queries
-                queries_and_expected = [
-                    ('jobs on Monday', ['monday-report.py', 'daily-backup.sh', 'daily-cleanup.sh', 'hourly-check.sh', 'business-hours.sh', 'end-of-day.sh']),
-                    ('jobs at 9 AM', ['monday-report.py', 'hourly-check.sh', 'business-hours.sh']),
-                    ('jobs on weekends', ['daily-backup.sh', 'daily-cleanup.sh', 'hourly-check.sh', 'weekend-maintenance.sh']),
-                    ('jobs on weekdays', ['daily-backup.sh', 'daily-cleanup.sh', 'monday-report.py', 'friday-deploy.sh', 'hourly-check.sh', 'business-hours.sh', 'end-of-day.sh'])
-                ]
-                
-                for query, expected_commands in queries_and_expected:
-                    with self.subTest(query=query):
-                        output = StringIO()
-                        with redirect_stdout(output):
-                            result = main(['--file', f.name, query])
-                        
-                        self.assertEqual(result, 0, f"Query '{query}' failed")
-                        output_text = output.getvalue()
-                        
-                        for expected_cmd in expected_commands:
-                            self.assertIn(expected_cmd, output_text, 
-                                        f"Expected '{expected_cmd}' in results for query '{query}'")
+            # Test various queries
+            queries_and_expected = [
+                ('jobs on Monday', ['monday-report.py', 'daily-backup.sh', 'daily-cleanup.sh', 'hourly-check.sh', 'business-hours.sh', 'end-of-day.sh']),
+                ('jobs at 9 AM', ['monday-report.py', 'hourly-check.sh']),  # Only jobs at exactly 9:00 AM
+                ('jobs on weekends', ['daily-backup.sh', 'daily-cleanup.sh', 'hourly-check.sh', 'weekend-maintenance.sh']),
+                ('jobs on weekdays', ['daily-backup.sh', 'daily-cleanup.sh', 'monday-report.py', 'friday-deploy.sh', 'hourly-check.sh', 'business-hours.sh', 'end-of-day.sh'])
+            ]
             
-            finally:
-                os.unlink(f.name)
+            for query, expected_commands in queries_and_expected:
+                with self.subTest(query=query):
+                    output = StringIO()
+                    with redirect_stdout(output):
+                        result = main(['--file', test_file, query])
+                    
+                    self.assertEqual(result, 0, f"Query '{query}' failed")
+                    output_text = output.getvalue()
+                    
+                    for expected_cmd in expected_commands:
+                        self.assertIn(expected_cmd, output_text, 
+                                    f"Expected '{expected_cmd}' in results for query '{query}'")
+        
+        finally:
+            # Clean up temp directory and all files in it
+            shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 if __name__ == '__main__':

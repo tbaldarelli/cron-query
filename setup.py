@@ -25,8 +25,8 @@ setup(
     long_description=read_long_description(),
     long_description_content_type="text/markdown",
     url="https://github.com/tonybaldarelli/cron-query",  # Update when you create the repo
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
+    packages=find_packages(where="src/python"),
+    package_dir={"": "src/python"},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: System Administrators",

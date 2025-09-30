@@ -6,7 +6,7 @@ Tests for system crontab functionality in cron_loader.py
 import os
 import pytest
 from unittest.mock import patch, mock_open, MagicMock
-from src.cron_query.cron_loader import (
+from cron_query.cron_loader import (
     load_system_crontabs,
     parse_cron_line,
     CronParseError,
@@ -238,7 +238,7 @@ MAILTO=admin@example.com
 class TestLoadSystemCrontabs:
     """Test the main load_system_crontabs function."""
 
-    @patch('src.cron_query.cron_loader.sys.platform', 'win32')
+    @patch('cron_query.cron_loader.sys.platform', 'win32')
     def test_load_system_crontabs_windows_mock(self):
         """Test loading system crontabs on Windows (uses mock data)."""
         jobs = load_system_crontabs()
@@ -255,16 +255,16 @@ class TestLoadSystemCrontabs:
         assert any("run-parts" in cmd for cmd in commands)
         assert any("backup" in cmd for cmd in commands)
 
-    @patch('src.cron_query.cron_loader.sys.platform', 'linux')
+    @patch('cron_query.cron_loader.sys.platform', 'linux')
     def test_load_system_crontabs_linux_success(self):
         """Test loading system crontabs on Linux successfully."""
         
         # Mock successful loading from both sources
-        with patch('src.cron_query.cron_loader._load_etc_crontab') as mock_etc, \
-             patch('src.cron_query.cron_loader._load_cron_d_directory') as mock_cron_d:
+        with patch('cron_query.cron_loader._load_etc_crontab') as mock_etc, \
+             patch('cron_query.cron_loader._load_cron_d_directory') as mock_cron_d:
             
             # Create mock jobs
-            from src.cron_query.cron_loader import CronJob
+            from cron_query.cron_loader import CronJob
             etc_jobs = [CronJob("0", "2", "*", "*", "*", "/etc/job", "0 2 * * * root /etc/job", "root", "system")]
             cron_d_jobs = [CronJob("0", "3", "*", "*", "*", "/cron.d/job", "0 3 * * * user /cron.d/job", "user", "system")]
             
@@ -277,17 +277,17 @@ class TestLoadSystemCrontabs:
             assert jobs[0].command == "/etc/job"
             assert jobs[1].command == "/cron.d/job"
 
-    @patch('src.cron_query.cron_loader.sys.platform', 'linux')
+    @patch('cron_query.cron_loader.sys.platform', 'linux')
     def test_load_system_crontabs_partial_failure(self):
         """Test loading system crontabs with partial failures."""
         
-        with patch('src.cron_query.cron_loader._load_etc_crontab') as mock_etc, \
-             patch('src.cron_query.cron_loader._load_cron_d_directory') as mock_cron_d:
+        with patch('cron_query.cron_loader._load_etc_crontab') as mock_etc, \
+             patch('cron_query.cron_loader._load_cron_d_directory') as mock_cron_d:
             
             # /etc/crontab fails, but /etc/cron.d/ succeeds
             mock_etc.side_effect = PermissionError("Cannot read /etc/crontab")
             
-            from src.cron_query.cron_loader import CronJob
+            from cron_query.cron_loader import CronJob
             cron_d_jobs = [CronJob("0", "3", "*", "*", "*", "/cron.d/job", "0 3 * * * user /cron.d/job", "user", "system")]
             mock_cron_d.return_value = cron_d_jobs
             
@@ -297,12 +297,12 @@ class TestLoadSystemCrontabs:
             assert len(jobs) == 1
             assert jobs[0].command == "/cron.d/job"
 
-    @patch('src.cron_query.cron_loader.sys.platform', 'linux')
+    @patch('cron_query.cron_loader.sys.platform', 'linux')
     def test_load_system_crontabs_total_failure(self):
         """Test loading system crontabs when both sources fail."""
         
-        with patch('src.cron_query.cron_loader._load_etc_crontab') as mock_etc, \
-             patch('src.cron_query.cron_loader._load_cron_d_directory') as mock_cron_d:
+        with patch('cron_query.cron_loader._load_etc_crontab') as mock_etc, \
+             patch('cron_query.cron_loader._load_cron_d_directory') as mock_cron_d:
             
             mock_etc.side_effect = PermissionError("Cannot read /etc/crontab")
             mock_cron_d.side_effect = PermissionError("Cannot read /etc/cron.d")
@@ -344,11 +344,11 @@ class TestMockSystemCrontabData:
 class TestIntegrationSystemCrontab:
     """Integration tests for system crontab functionality."""
 
-    @patch('src.cron_query.cron_loader.sys.platform', 'win32')
+    @patch('cron_query.cron_loader.sys.platform', 'win32')
     def test_system_crontab_integration_with_user_query(self):
         """Test that system crontab jobs work with query analysis."""
-        from src.cron_query.schedule_analyzer import find_matching_jobs
-        from src.cron_query.query_parser import parse_query
+        from cron_query.schedule_analyzer import find_matching_jobs
+        from cron_query.query_parser import parse_query
         
         # Load system crontabs
         jobs = load_system_crontabs()
@@ -367,7 +367,7 @@ class TestIntegrationSystemCrontab:
         for job in matches:
             assert job.source == "system"
 
-    @patch('src.cron_query.cron_loader.sys.platform', 'win32') 
+    @patch('cron_query.cron_loader.sys.platform', 'win32') 
     def test_system_crontab_users_preserved(self):
         """Test that user information is preserved in system crontabs."""
         jobs = load_system_crontabs()

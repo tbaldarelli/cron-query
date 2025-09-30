@@ -11,9 +11,9 @@ import io
 import json
 from contextlib import redirect_stdout, redirect_stderr
 
-from src.cron_query.main import main, create_parser, process_query, load_cron_jobs
-from src.cron_query.cron_loader import CronJob
-from src.cron_query.query_parser import QueryCriteria, QueryType
+from cron_query.main import main, create_parser, process_query, load_cron_jobs
+from cron_query.cron_loader import CronJob
+from cron_query.query_parser import QueryCriteria, QueryType
 
 
 class TestCLIArgumentParsing(unittest.TestCase):
@@ -103,7 +103,7 @@ class TestLoadCronJobs(unittest.TestCase):
     def setUp(self):
         self.logger = MagicMock()
     
-    @patch('src.cron_query.main.load_user_crontab')
+    @patch('cron_query.main.load_user_crontab')
     def test_load_user_jobs_success(self, mock_load):
         """Test successful loading of user cron jobs."""
         mock_jobs = [
@@ -126,7 +126,7 @@ class TestLoadCronJobs(unittest.TestCase):
         
         self.assertIn("Invalid source", str(context.exception))
     
-    @patch('src.cron_query.main.load_user_crontab')
+    @patch('cron_query.main.load_user_crontab')
     def test_load_jobs_exception(self, mock_load):
         """Test exception handling during job loading."""
         mock_load.side_effect = Exception("Crontab not found")
@@ -147,9 +147,9 @@ class TestProcessQuery(unittest.TestCase):
             CronJob("*/15", "*", "*", "*", "*", "health_check.sh", "*/15 * * * * health_check.sh", "user", "user")
         ]
     
-    @patch('src.cron_query.main.load_cron_jobs')
-    @patch('src.cron_query.main.parse_query')
-    @patch('src.cron_query.main.find_matching_jobs')
+    @patch('cron_query.main.load_cron_jobs')
+    @patch('cron_query.main.parse_query')
+    @patch('cron_query.main.find_matching_jobs')
     def test_successful_query_processing(self, mock_find, mock_parse, mock_load):
         """Test successful end-to-end query processing."""
         # Mock setup
@@ -172,9 +172,9 @@ class TestProcessQuery(unittest.TestCase):
         self.assertIn('weekly_backup.sh', output_text)
         self.assertIn('Monday', output_text)
     
-    @patch('src.cron_query.main.load_cron_jobs')
-    @patch('src.cron_query.main.parse_query')
-    @patch('src.cron_query.main.find_matching_jobs')
+    @patch('cron_query.main.load_cron_jobs')
+    @patch('cron_query.main.parse_query')
+    @patch('cron_query.main.find_matching_jobs')
     def test_json_output_format(self, mock_find, mock_parse, mock_load):
         """Test JSON output formatting."""
         # Mock setup
@@ -208,7 +208,7 @@ class TestProcessQuery(unittest.TestCase):
         self.assertIn('query', parsed_json)
         self.assertIn('results', parsed_json)
     
-    @patch('src.cron_query.main.load_cron_jobs')
+    @patch('cron_query.main.load_cron_jobs')
     def test_invalid_output_format(self, mock_load):
         """Test handling of invalid output format."""
         mock_load.return_value = self.sample_jobs
@@ -221,7 +221,7 @@ class TestProcessQuery(unittest.TestCase):
         output_text = output.getvalue()
         self.assertIn('Invalid output format', output_text)
     
-    @patch('src.cron_query.main.load_cron_jobs')
+    @patch('cron_query.main.load_cron_jobs')
     def test_unsupported_source_error(self, mock_load):
         """Test error handling for unsupported sources."""
         mock_load.side_effect = ValueError("Source 'system' is not yet supported")
@@ -234,8 +234,8 @@ class TestProcessQuery(unittest.TestCase):
         output_text = output.getvalue()
         self.assertIn('not yet supported', output_text)
     
-    @patch('src.cron_query.main.load_cron_jobs')
-    @patch('src.cron_query.main.parse_query')
+    @patch('cron_query.main.load_cron_jobs')
+    @patch('cron_query.main.parse_query')
     def test_query_parsing_error(self, mock_parse, mock_load):
         """Test handling of query parsing errors."""
         mock_load.return_value = self.sample_jobs
@@ -250,9 +250,9 @@ class TestProcessQuery(unittest.TestCase):
         self.assertIn('Could not understand query', output_text)
         self.assertIn('Examples of supported queries', output_text)  # Should include suggestions
     
-    @patch('src.cron_query.main.load_cron_jobs')
-    @patch('src.cron_query.main.parse_query')
-    @patch('src.cron_query.main.find_matching_jobs')
+    @patch('cron_query.main.load_cron_jobs')
+    @patch('cron_query.main.parse_query')
+    @patch('cron_query.main.find_matching_jobs')
     def test_empty_results(self, mock_find, mock_parse, mock_load):
         """Test handling of empty search results."""
         mock_load.return_value = self.sample_jobs
@@ -272,9 +272,9 @@ class TestProcessQuery(unittest.TestCase):
         output_text = output.getvalue()
         self.assertIn('No jobs found', output_text)
     
-    @patch('src.cron_query.main.load_cron_jobs')
-    @patch('src.cron_query.main.parse_query')
-    @patch('src.cron_query.main.find_matching_jobs')
+    @patch('cron_query.main.load_cron_jobs')
+    @patch('cron_query.main.parse_query')
+    @patch('cron_query.main.find_matching_jobs')
     def test_schedule_analyzer_error(self, mock_find, mock_parse, mock_load):
         """Test handling of schedule analyzer errors."""
         mock_load.return_value = self.sample_jobs
@@ -298,7 +298,7 @@ class TestProcessQuery(unittest.TestCase):
 class TestMainEntryPoint(unittest.TestCase):
     """Test the main() entry point function."""
     
-    @patch('src.cron_query.main.process_query')
+    @patch('cron_query.main.process_query')
     def test_main_success(self, mock_process):
         """Test successful main execution."""
         mock_process.return_value = 0
@@ -307,7 +307,7 @@ class TestMainEntryPoint(unittest.TestCase):
         self.assertEqual(result, 0)
         mock_process.assert_called_once()
     
-    @patch('src.cron_query.main.process_query')
+    @patch('cron_query.main.process_query')
     def test_main_with_arguments(self, mock_process):
         """Test main with various argument combinations."""
         mock_process.return_value = 0
@@ -322,24 +322,24 @@ class TestMainEntryPoint(unittest.TestCase):
         self.assertEqual(kwargs['source'], 'user')
         self.assertTrue(kwargs['verbose'])
     
-    @patch('src.cron_query.main.process_query')
+    @patch('cron_query.main.process_query')
     def test_keyboard_interrupt(self, mock_process):
         """Test handling of keyboard interrupt."""
         mock_process.side_effect = KeyboardInterrupt()
         
         # Suppress log output during test
-        with patch('src.cron_query.main.setup_logging'):
+        with patch('cron_query.main.setup_logging'):
             result = main(['test query'])
         
         self.assertEqual(result, 130)
     
-    @patch('src.cron_query.main.process_query')
+    @patch('cron_query.main.process_query')
     def test_unexpected_exception(self, mock_process):
         """Test handling of unexpected exceptions."""
         mock_process.side_effect = RuntimeError("Unexpected error")
         
         # Suppress log output during test
-        with patch('src.cron_query.main.setup_logging'):
+        with patch('cron_query.main.setup_logging'):
             result = main(['test query'])
         
         self.assertEqual(result, 1)
@@ -357,7 +357,7 @@ class TestMainEntryPoint(unittest.TestCase):
 class TestErrorFormatting(unittest.TestCase):
     """Test error message formatting in various scenarios."""
     
-    @patch('src.cron_query.main.load_cron_jobs')
+    @patch('cron_query.main.load_cron_jobs')
     def test_cron_loading_error_message(self, mock_load):
         """Test error message formatting for cron loading failures."""
         mock_load.side_effect = Exception("Permission denied")
@@ -371,10 +371,10 @@ class TestErrorFormatting(unittest.TestCase):
         self.assertIn('Failed to load cron jobs', output_text)
         self.assertIn('Permission denied', output_text)
     
-    @patch('src.cron_query.main.load_cron_jobs')
-    @patch('src.cron_query.main.parse_query')
-    @patch('src.cron_query.main.find_matching_jobs')
-    @patch('src.cron_query.main.format_query_results')
+    @patch('cron_query.main.load_cron_jobs')
+    @patch('cron_query.main.parse_query')
+    @patch('cron_query.main.find_matching_jobs')
+    @patch('cron_query.main.format_query_results')
     def test_output_formatting_error(self, mock_format, mock_find, mock_parse, mock_load):
         """Test error handling during output formatting."""
         mock_load.return_value = []
@@ -394,7 +394,7 @@ class TestErrorFormatting(unittest.TestCase):
 class TestIntegrationScenarios(unittest.TestCase):
     """Test realistic integration scenarios."""
     
-    @patch('src.cron_query.main.load_user_crontab')
+    @patch('cron_query.main.load_user_crontab')
     def test_realistic_monday_query(self, mock_load):
         """Test a realistic Monday query with actual cron jobs."""
         mock_load.return_value = [
@@ -413,7 +413,7 @@ class TestIntegrationScenarios(unittest.TestCase):
         self.assertIn('daily_cleanup.sh', output_text)
         self.assertNotIn('monthly_report.py', output_text)
     
-    @patch('src.cron_query.main.load_user_crontab')
+    @patch('cron_query.main.load_user_crontab')
     def test_realistic_time_query(self, mock_load):
         """Test a realistic time-based query."""
         mock_load.return_value = [
