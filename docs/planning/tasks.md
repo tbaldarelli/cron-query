@@ -245,6 +245,18 @@ Enhanced: Query "this Saturday after 6 PM" shows "Next runs on Saturday: 2025-09
 - Performance comparisons
 - **Target**: Ongoing learning project
 
+## Known Issues / Backlog
+
+- Unicode symbol rendering in xterm variants
+  - Symptoms: Certain xterm terminals render bullets/arrows/cross marks incorrectly or as mojibake.
+  - Current behavior: Environment variables CRON_QUERY_FORCE_ASCII and CRON_QUERY_FORCE_UNICODE allow user override; automatic detection works for most terminals but not all xterm derivatives.
+  - Status: Low priority. Defer a generic xterm-robust solution; revisit after stabilization.
+  - Proposed follow-ups:
+    - Add CLI flags: --ascii and --unicode to override detection.
+    - Collect terminal fingerprints/behaviors; add tests.
+    - Document known limitations in README and man page with examples.
+  - Workaround: Set CRON_QUERY_FORCE_ASCII=1 to force ASCII when Unicode looks wrong.
+
 ## Risk Mitigation
 
 ### High Risk Items
