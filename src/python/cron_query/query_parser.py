@@ -119,7 +119,10 @@ def parse_query(query: str) -> QueryCriteria:
         if combined_criteria:
             logger.debug(f"Parsed as combined query: {combined_criteria}")
             return combined_criteria
-    except QueryParseError:
+    except QueryParseError as e:
+        # Re-raise validation errors like date conflicts, but allow other parse errors to continue
+        if "Date conflict:" in str(e):
+            raise e
         pass
     
     # Try to parse as day-based query
@@ -168,42 +171,127 @@ def parse_combined_query(query: str) -> Optional[QueryCriteria]:
     combined_patterns = [
         # "this Saturday after 10 AM" or "this Saturday, after 10 AM" (including typos like "comming")
         r'(this|next|coming|comming)\s+(\w+)\s*,?\s*(after|before|between)\s+(.+)',
+        # "Saturday 9/18/2025 between 8 pm and 11 pm" - explicit date with time range
+        r'(\w+day)\s+(\d{1,2}/\d{1,2}/\d{4})\s*(after|before|between)\s+(.+)',
+        # "9/18/2025 between 8 pm and 11 pm" - explicit date with time range
+        r'(\d{1,2}/\d{1,2}/\d{4})\s*(after|before|between)\s+(.+)',
+        # "today between 8 pm and 11 pm" - today with time range
+        r'(today|tomorrow|yesterday)\s*(after|before|between)\s+(.+)',
         # "Saturday after 10 AM" or "Saturday, after 10 AM"
         r'(\w+day|weekends?|weekdays?)\s*,?\s*(after|before|between)\s+(.+)',
         # "after 10 AM on Saturday"
         r'(after|before|between)\s+(.+)\s+on\s+(\w+day|weekends?|weekdays?)',
     ]
     
-    for pattern in combined_patterns:
+    for i, pattern in enumerate(combined_patterns):
         match = re.search(pattern, query)
         if match:
-            return _parse_combined_match(query, match, pattern)
+            return _parse_combined_match(query, match, i)
     
     return None
 
 
-def _parse_combined_match(query: str, match, pattern: str) -> QueryCriteria:
+def _parse_combined_match(query: str, match, pattern_index: int) -> QueryCriteria:
     """
     Parse a matched combined query pattern.
     """
     groups = match.groups()
+    num_groups = len(groups)
     
     # Initialize base criteria
     criteria = QueryCriteria(query_type=QueryType.COMBINED, raw_query=query)
     
-    # Pattern-specific parsing
-    if 'this|next|coming' in pattern:
-        # "this Saturday after 10 AM"
-        time_modifier, day_name, time_relation, time_part = groups
+    # Determine pattern type by index:
+    # 0: "this Saturday after 10 AM" 
+    # 1: "Saturday 9/18/2025 between 8 pm and 11 pm"
+    # 2: "9/18/2025 between 8 pm and 11 pm"
+    # 3: "today between 8 pm and 11 pm"
+    # 4: "Saturday after 10 AM"
+    # 5: "after 10 AM on Saturday"
+    
+    if pattern_index == 0:
+        # "this Saturday after 10 AM" - 4 groups
+        if num_groups == 4:
+            time_modifier, day_name, time_relation, time_part = groups
+            
+            # Parse the day part
+            day_criteria = parse_day_query(f"{time_modifier} {day_name}")
+            if day_criteria:
+                criteria.days_of_week = day_criteria.days_of_week
+                criteria.is_specific_date = day_criteria.is_specific_date
+                criteria.specific_date = day_criteria.specific_date
+                criteria.weekdays_only = day_criteria.weekdays_only
+                criteria.weekends_only = day_criteria.weekends_only
+    
+    elif pattern_index == 1:
+        # "Saturday 9/18/2025 between 8 pm and 11 pm" - 4 groups
+        if num_groups == 4:
+            day_name, date_str, time_relation, time_part = groups
+            
+            # Validate date consistency with day name
+            day_criteria = parse_day_query(day_name)
+            date_criteria = _parse_explicit_date(date_str)
+            
+            if day_criteria and date_criteria:
+                # Check for day/date conflict
+                conflict = _check_day_date_conflict(f"{day_name} {date_str}", day_criteria.days_of_week)
+                if conflict:
+                    raise QueryParseError(conflict)
+                
+                # Use the explicit date
+                criteria.is_specific_date = True
+                criteria.specific_date = date_criteria.specific_date
+                criteria.days_of_week = day_criteria.days_of_week  # For reference
+    
+    elif pattern_index == 2:
+        # "9/18/2025 between 8 pm and 11 pm" - 3 groups
+        if num_groups == 3:
+            date_str, time_relation, time_part = groups
+            
+            # Parse the explicit date
+            date_criteria = _parse_explicit_date(date_str)
+            if date_criteria:
+                criteria.is_specific_date = True
+                criteria.specific_date = date_criteria.specific_date
+    
+    elif pattern_index == 3:
+        # "today between 8 pm and 11 pm" - 3 groups
+        if num_groups == 3:
+            day_ref, time_relation, time_part = groups
+            
+            # Parse the day reference
+            day_criteria = parse_day_query(day_ref)
+            if day_criteria:
+                criteria.is_specific_date = True
+                criteria.specific_date = day_criteria.specific_date
+    
+    # Parse time constraints for patterns that have time_relation and time_part
+    if num_groups >= 3:
+        # Extract time_relation and time_part from the last two groups
+        time_relation = groups[-2] if num_groups >= 2 else None
+        time_part = groups[-1] if num_groups >= 1 else None
         
-        # Parse the day part
-        day_criteria = parse_day_query(f"{time_modifier} {day_name}")
-        if day_criteria:
-            criteria.days_of_week = day_criteria.days_of_week
-            criteria.is_specific_date = day_criteria.is_specific_date
-            criteria.specific_date = day_criteria.specific_date
-            criteria.weekdays_only = day_criteria.weekdays_only
-            criteria.weekends_only = day_criteria.weekends_only
+        if time_relation == 'after':
+            time_info = _parse_single_time(time_part)
+            if time_info:
+                criteria.time_range_start = time_info
+                criteria.is_time_after = True
+        elif time_relation == 'before':
+            time_info = _parse_single_time(time_part)
+            if time_info:
+                criteria.time_range_end = time_info
+                criteria.is_time_before = True
+        elif time_relation == 'between':
+            # Handle "between X and Y" in time_part
+            between_match = re.search(r'([^\s]+(?:\s*(?:am|pm))?)\s+and\s+([^\s]+(?:\s*(?:am|pm))?)', time_part)
+            if between_match:
+                start_str, end_str = between_match.groups()
+                start_info = _parse_single_time(start_str)
+                end_info = _parse_single_time(end_str)
+                if start_info and end_info:
+                    criteria.time_range_start = start_info
+                    criteria.time_range_end = end_info
+                    criteria.is_time_between = True
         
         # Parse the time part - handle ranges directly
         if time_relation == 'after':
@@ -317,6 +405,11 @@ def parse_day_query(query: str) -> Optional[QueryCriteria]:
     # Remove common prefixes that don't affect meaning
     query = _normalize_query(query)
     
+    # Check for explicit date patterns first (e.g., "9/18/2025", "2025-09-18")
+    explicit_date = _parse_explicit_date(query)
+    if explicit_date:
+        return explicit_date
+    
     # Check for basic time references (today, tomorrow, yesterday)
     basic_time_refs = ['today', 'tomorrow', 'yesterday']
     for time_ref in basic_time_refs:
@@ -364,6 +457,11 @@ def parse_day_query(query: str) -> Optional[QueryCriteria]:
             found_days.add(DAY_NAMES[clean_word])
     
     if found_days:
+        # Check for explicit date validation (e.g., "Saturday 9/18/2025")
+        explicit_date_conflict = _check_day_date_conflict(query, found_days)
+        if explicit_date_conflict:
+            raise QueryParseError(explicit_date_conflict)
+        
         # Check if this is a specific date query (e.g., "this Saturday")
         # Handle common typos like "comming" for "coming"
         is_specific = any(word in query for word in ['this', 'next', 'coming', 'comming'])
@@ -678,6 +776,99 @@ def _calculate_relative_date(query: str, day_nums: Set[int]) -> Optional[datetim
         target_date = now + timedelta(days=days_ahead)
     
     return target_date.replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def _parse_explicit_date(query: str) -> Optional[QueryCriteria]:
+    """
+    Parse explicit date formats like "9/18/2025", "2025-09-18", "September 18, 2025".
+    
+    Args:
+        query: Query string that might contain explicit dates
+        
+    Returns:
+        QueryCriteria for the explicit date, or None if no explicit date found
+    """
+    # Pattern 1: MM/DD/YYYY or M/D/YYYY
+    date_pattern1 = r'\b(\d{1,2})/(\d{1,2})/(\d{4})\b'
+    match = re.search(date_pattern1, query)
+    
+    if match:
+        month, day, year = match.groups()
+        try:
+            target_date = datetime(int(year), int(month), int(day))
+            return QueryCriteria(
+                query_type=QueryType.DAY_BASED,
+                raw_query=query,
+                is_specific_date=True,
+                specific_date=target_date.replace(hour=0, minute=0, second=0, microsecond=0)
+            )
+        except ValueError:
+            raise QueryParseError(f"Invalid date: {match.group(0)}")
+    
+    # Pattern 2: YYYY-MM-DD
+    date_pattern2 = r'\b(\d{4})-(\d{1,2})-(\d{1,2})\b'
+    match = re.search(date_pattern2, query)
+    
+    if match:
+        year, month, day = match.groups()
+        try:
+            target_date = datetime(int(year), int(month), int(day))
+            return QueryCriteria(
+                query_type=QueryType.DAY_BASED,
+                raw_query=query,
+                is_specific_date=True,
+                specific_date=target_date.replace(hour=0, minute=0, second=0, microsecond=0)
+            )
+        except ValueError:
+            raise QueryParseError(f"Invalid date: {match.group(0)}")
+    
+    return None
+
+
+def _check_day_date_conflict(query: str, found_days: Set[int]) -> Optional[str]:
+    """
+    Check if query contains both day names and explicit dates that conflict.
+    
+    Args:
+        query: Query string
+        found_days: Set of day numbers found in the query
+        
+    Returns:
+        Error message if conflict found, None otherwise
+    """
+    # Look for explicit dates
+    date_patterns = [
+        r'\b(\d{1,2})/(\d{1,2})/(\d{4})\b',  # MM/DD/YYYY
+        r'\b(\d{4})-(\d{1,2})-(\d{1,2})\b'   # YYYY-MM-DD
+    ]
+    
+    for pattern in date_patterns:
+        match = re.search(pattern, query)
+        if match:
+            groups = match.groups()
+            try:
+                if len(groups) == 3:
+                    if '/' in pattern:
+                        month, day, year = groups
+                        date_obj = datetime(int(year), int(month), int(day))
+                    else:
+                        year, month, day = groups
+                        date_obj = datetime(int(year), int(month), int(day))
+                    
+                    # Convert Python weekday (0=Monday) to cron weekday (0=Sunday)
+                    actual_day = (date_obj.weekday() + 1) % 7
+                    
+                    if actual_day not in found_days:
+                        day_names = [name.title() for name, num in DAY_NAMES.items() if num in found_days and len(name) > 3]
+                        actual_day_name = [name.title() for name, num in DAY_NAMES.items() if num == actual_day and len(name) > 3]
+                        
+                        if day_names and actual_day_name:
+                            return (f"Date conflict: {match.group(0)} is a {actual_day_name[0]}, "
+                                   f"not a {day_names[0]}. Please use the correct day or date.")
+            except ValueError:
+                pass  # Invalid date, will be caught elsewhere
+    
+    return None
 
 
 def _normalize_query(query: str) -> str:

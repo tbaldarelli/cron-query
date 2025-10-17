@@ -207,8 +207,11 @@
 Natural language query improvements (from Task 10 testing):
 - [ ] Support frequency keywords like "daily" (map to DOW/DOM-agnostic schedules)
 - [ ] Accept numeric day-of-week (0-6, with 0/7 as Sunday)
-- [ ] Handle three-letter day abbreviations (e.g., Sun, Mon, Tue)
+- [x] Handle three-letter day abbreviations (e.g., Sun, Mon, Tue)
 - [ ] Improve handling for broad queries like "at every time" or "what jobs run daily"
+- [x] Support explicit date formats (MM/DD/YYYY, YYYY-MM-DD)
+- [x] Support "today", "tomorrow", "yesterday" queries
+- [ ] Validate day name vs explicit date consistency (partially implemented)
 
 **Example Enhancement**:
 Current: `0 * * * *` shows "Next runs: 2025-09-16 19:00, 2025-09-16 20:00"
