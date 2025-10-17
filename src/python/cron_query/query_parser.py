@@ -265,8 +265,43 @@ def _parse_combined_match(query: str, match, pattern_index: int) -> QueryCriteri
                 criteria.is_specific_date = True
                 criteria.specific_date = day_criteria.specific_date
     
-    # Parse time constraints for patterns that have time_relation and time_part
-    if num_groups >= 3:
+    elif pattern_index == 4:
+        # "Saturday after 10 AM" or "weekends before 5 PM" - 3 groups
+        if num_groups == 3:
+            day_name, time_relation, time_part = groups
+            
+            # Parse the day part
+            day_criteria = parse_day_query(day_name)
+            if day_criteria:
+                criteria.days_of_week = day_criteria.days_of_week
+                criteria.weekdays_only = day_criteria.weekdays_only
+                criteria.weekends_only = day_criteria.weekends_only
+            
+            # Parse the time part
+            if time_relation == 'after':
+                time_info = _parse_single_time(time_part)
+                if time_info:
+                    criteria.time_range_start = time_info
+                    criteria.is_time_after = True
+            elif time_relation == 'before':
+                time_info = _parse_single_time(time_part)
+                if time_info:
+                    criteria.time_range_end = time_info
+                    criteria.is_time_before = True
+            elif time_relation == 'between':
+                # Handle "between X and Y" in time_part
+                between_match = re.search(r'([^\s]+(?:\s*(?:am|pm))?)\s+and\s+([^\s]+(?:\s*(?:am|pm))?)', time_part)
+                if between_match:
+                    start_str, end_str = between_match.groups()
+                    start_info = _parse_single_time(start_str)
+                    end_info = _parse_single_time(end_str)
+                    if start_info and end_info:
+                        criteria.time_range_start = start_info
+                        criteria.time_range_end = end_info
+                        criteria.is_time_between = True
+    
+    # Parse time constraints for patterns that don't have specific handling above
+    elif num_groups >= 3:
         # Extract time_relation and time_part from the last two groups
         time_relation = groups[-2] if num_groups >= 2 else None
         time_part = groups[-1] if num_groups >= 1 else None
