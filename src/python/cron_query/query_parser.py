@@ -191,6 +191,38 @@ def parse_combined_query(query: str) -> Optional[QueryCriteria]:
     return None
 
 
+def _apply_time_constraints(criteria: QueryCriteria, time_relation: str, time_part: str) -> None:
+    """
+    Apply time constraints (after/before/between) to a QueryCriteria object.
+    
+    Args:
+        criteria: QueryCriteria object to modify
+        time_relation: 'after', 'before', or 'between'
+        time_part: Time specification string (e.g., '10 AM', '8 pm and 11 pm')
+    """
+    if time_relation == 'after':
+        time_info = _parse_single_time(time_part)
+        if time_info:
+            criteria.time_range_start = time_info
+            criteria.is_time_after = True
+    elif time_relation == 'before':
+        time_info = _parse_single_time(time_part)
+        if time_info:
+            criteria.time_range_end = time_info
+            criteria.is_time_before = True
+    elif time_relation == 'between':
+        # Handle "between X and Y" in time_part
+        between_match = re.search(r'([^\s]+(?:\s*(?:am|pm))?)\s+and\s+([^\s]+(?:\s*(?:am|pm))?)', time_part)
+        if between_match:
+            start_str, end_str = between_match.groups()
+            start_info = _parse_single_time(start_str)
+            end_info = _parse_single_time(end_str)
+            if start_info and end_info:
+                criteria.time_range_start = start_info
+                criteria.time_range_end = end_info
+                criteria.is_time_between = True
+
+
 def _parse_combined_match(query: str, match, pattern_index: int) -> QueryCriteria:
     """
     Parse a matched combined query pattern.
@@ -222,6 +254,9 @@ def _parse_combined_match(query: str, match, pattern_index: int) -> QueryCriteri
                 criteria.specific_date = day_criteria.specific_date
                 criteria.weekdays_only = day_criteria.weekdays_only
                 criteria.weekends_only = day_criteria.weekends_only
+            
+            # Parse the time part using helper
+            _apply_time_constraints(criteria, time_relation, time_part)
     
     elif pattern_index == 1:
         # "Saturday 9/18/2025 between 8 pm and 11 pm" - 4 groups
@@ -242,6 +277,9 @@ def _parse_combined_match(query: str, match, pattern_index: int) -> QueryCriteri
                 criteria.is_specific_date = True
                 criteria.specific_date = date_criteria.specific_date
                 criteria.days_of_week = day_criteria.days_of_week  # For reference
+            
+            # Parse the time part using helper
+            _apply_time_constraints(criteria, time_relation, time_part)
     
     elif pattern_index == 2:
         # "9/18/2025 between 8 pm and 11 pm" - 3 groups
@@ -253,6 +291,9 @@ def _parse_combined_match(query: str, match, pattern_index: int) -> QueryCriteri
             if date_criteria:
                 criteria.is_specific_date = True
                 criteria.specific_date = date_criteria.specific_date
+            
+            # Parse the time part using helper
+            _apply_time_constraints(criteria, time_relation, time_part)
     
     elif pattern_index == 3:
         # "today between 8 pm and 11 pm" - 3 groups
@@ -264,6 +305,9 @@ def _parse_combined_match(query: str, match, pattern_index: int) -> QueryCriteri
             if day_criteria:
                 criteria.is_specific_date = True
                 criteria.specific_date = day_criteria.specific_date
+            
+            # Parse the time part using helper
+            _apply_time_constraints(criteria, time_relation, time_part)
     
     elif pattern_index == 4:
         # "Saturday after 10 AM" or "weekends before 5 PM" - 3 groups
@@ -277,113 +321,23 @@ def _parse_combined_match(query: str, match, pattern_index: int) -> QueryCriteri
                 criteria.weekdays_only = day_criteria.weekdays_only
                 criteria.weekends_only = day_criteria.weekends_only
             
-            # Parse the time part
-            if time_relation == 'after':
-                time_info = _parse_single_time(time_part)
-                if time_info:
-                    criteria.time_range_start = time_info
-                    criteria.is_time_after = True
-            elif time_relation == 'before':
-                time_info = _parse_single_time(time_part)
-                if time_info:
-                    criteria.time_range_end = time_info
-                    criteria.is_time_before = True
-            elif time_relation == 'between':
-                # Handle "between X and Y" in time_part
-                between_match = re.search(r'([^\s]+(?:\s*(?:am|pm))?)\s+and\s+([^\s]+(?:\s*(?:am|pm))?)', time_part)
-                if between_match:
-                    start_str, end_str = between_match.groups()
-                    start_info = _parse_single_time(start_str)
-                    end_info = _parse_single_time(end_str)
-                    if start_info and end_info:
-                        criteria.time_range_start = start_info
-                        criteria.time_range_end = end_info
-                        criteria.is_time_between = True
+            # Parse the time part using helper
+            _apply_time_constraints(criteria, time_relation, time_part)
     
-    # Parse time constraints for patterns that don't have specific handling above
-    elif num_groups >= 3:
-        # Extract time_relation and time_part from the last two groups
-        time_relation = groups[-2] if num_groups >= 2 else None
-        time_part = groups[-1] if num_groups >= 1 else None
-        
-        if time_relation == 'after':
-            time_info = _parse_single_time(time_part)
-            if time_info:
-                criteria.time_range_start = time_info
-                criteria.is_time_after = True
-        elif time_relation == 'before':
-            time_info = _parse_single_time(time_part)
-            if time_info:
-                criteria.time_range_end = time_info
-                criteria.is_time_before = True
-        elif time_relation == 'between':
-            # Handle "between X and Y" in time_part
-            between_match = re.search(r'([^\s]+(?:\s*(?:am|pm))?)\s+and\s+([^\s]+(?:\s*(?:am|pm))?)', time_part)
-            if between_match:
-                start_str, end_str = between_match.groups()
-                start_info = _parse_single_time(start_str)
-                end_info = _parse_single_time(end_str)
-                if start_info and end_info:
-                    criteria.time_range_start = start_info
-                    criteria.time_range_end = end_info
-                    criteria.is_time_between = True
-        
-        # Parse the time part - handle ranges directly
-        if time_relation == 'after':
-            time_info = _parse_single_time(time_part)
-            if time_info:
-                criteria.time_range_start = time_info
-                criteria.is_time_after = True
-        elif time_relation == 'before':
-            time_info = _parse_single_time(time_part)
-            if time_info:
-                criteria.time_range_end = time_info
-                criteria.is_time_before = True
-        elif time_relation == 'between':
-            # Handle "between X and Y" in time_part
-            between_match = re.search(r'([^\s]+(?:\s*(?:am|pm))?)\s+and\s+([^\s]+(?:\s*(?:am|pm))?)', time_part)
-            if between_match:
-                start_str, end_str = between_match.groups()
-                start_info = _parse_single_time(start_str)
-                end_info = _parse_single_time(end_str)
-                if start_info and end_info:
-                    criteria.time_range_start = start_info
-                    criteria.time_range_end = end_info
-                    criteria.is_time_between = True
-    
-    elif 'on\\s+' in pattern:
-        # "after 10 AM on Saturday"
-        time_relation, time_part, day_name = groups
-        
-        # Parse the day part
-        day_criteria = parse_day_query(day_name)
-        if day_criteria:
-            criteria.days_of_week = day_criteria.days_of_week
-            criteria.weekdays_only = day_criteria.weekdays_only
-            criteria.weekends_only = day_criteria.weekends_only
-        
-        # Parse the time part - handle ranges directly
-        if time_relation == 'after':
-            time_info = _parse_single_time(time_part)
-            if time_info:
-                criteria.time_range_start = time_info
-                criteria.is_time_after = True
-        elif time_relation == 'before':
-            time_info = _parse_single_time(time_part)
-            if time_info:
-                criteria.time_range_end = time_info
-                criteria.is_time_before = True
-        elif time_relation == 'between':
-            # Handle "between X and Y" in time_part
-            between_match = re.search(r'([^\s]+(?:\s*(?:am|pm))?)\s+and\s+([^\s]+(?:\s*(?:am|pm))?)', time_part)
-            if between_match:
-                start_str, end_str = between_match.groups()
-                start_info = _parse_single_time(start_str)
-                end_info = _parse_single_time(end_str)
-                if start_info and end_info:
-                    criteria.time_range_start = start_info
-                    criteria.time_range_end = end_info
-                    criteria.is_time_between = True
+    elif pattern_index == 5:
+        # "after 10 AM on Saturday" - 3 groups
+        if num_groups == 3:
+            time_relation, time_part, day_name = groups
+            
+            # Parse the day part
+            day_criteria = parse_day_query(day_name)
+            if day_criteria:
+                criteria.days_of_week = day_criteria.days_of_week
+                criteria.weekdays_only = day_criteria.weekdays_only
+                criteria.weekends_only = day_criteria.weekends_only
+            
+            # Parse the time part using helper
+            _apply_time_constraints(criteria, time_relation, time_part)
     
     else:
         # "Saturday after 10 AM"
