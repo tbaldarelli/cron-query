@@ -900,8 +900,11 @@ def _normalize_query(query: str) -> str:
     
     # Special case: remove 'at' only if NOT followed by a number
     if words and words[0] == 'at':
-        if len(words) < 2 or not re.match(r'\d', words[1]):
+        if len(words) < 2 or not re.match(r'\\d', words[1]):
             words.pop(0)
+    
+    # Remove standalone 'jobs' anywhere in the query (e.g., "Wednesday jobs after 12 am")
+    words = [w for w in words if w != 'jobs']
     
     return ' '.join(words)
 
