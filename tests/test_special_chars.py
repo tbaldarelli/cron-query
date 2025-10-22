@@ -70,7 +70,9 @@ class TestSpecialChars(unittest.TestCase):
             self.assertTrue(_locale_is_utf8())
         
         # Test with non-UTF-8 locale
-        with patch.dict(os.environ, {'LANG': 'C'}):
+        # Mock getpreferredencoding to simulate legacy system behavior
+        with patch.dict(os.environ, {'LANG': 'C'}), \
+             patch('locale.getpreferredencoding', return_value='C'):
             self.assertFalse(_locale_is_utf8())
         
         # Test with multiple locale vars
@@ -106,8 +108,10 @@ class TestSpecialChars(unittest.TestCase):
             self.assertTrue(supports_unicode())
         
         # Test with ASCII encoding
+        # Mock locale fallback to simulate legacy system
         mock_stdout = MockStdout(encoding='ascii')
-        with patch('sys.stdout', mock_stdout):
+        with patch('sys.stdout', mock_stdout), \
+             patch('locale.getpreferredencoding', return_value='ascii'):
             self.assertFalse(supports_unicode())
 
     def test_supports_unicode_term(self):

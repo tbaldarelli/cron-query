@@ -142,3 +142,6 @@ ehthumbs.db
 Thumbs.db
 # Deployment packages
 cron-query-centos/
+
+# GitHub Actions workflows to ignore
+.github/ignore_workflows/

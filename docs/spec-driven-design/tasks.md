@@ -207,8 +207,11 @@
 Natural language query improvements (from Task 10 testing):
 - [ ] Support frequency keywords like "daily" (map to DOW/DOM-agnostic schedules)
 - [ ] Accept numeric day-of-week (0-6, with 0/7 as Sunday)
-- [ ] Handle three-letter day abbreviations (e.g., Sun, Mon, Tue)
+- [x] Handle three-letter day abbreviations (e.g., Sun, Mon, Tue)
 - [ ] Improve handling for broad queries like "at every time" or "what jobs run daily"
+- [x] Support explicit date formats (MM/DD/YYYY, YYYY-MM-DD)
+- [x] Support "today", "tomorrow", "yesterday" queries
+- [ ] Validate day name vs explicit date consistency (partially implemented)
 
 **Example Enhancement**:
 Current: `0 * * * *` shows "Next runs: 2025-09-16 19:00, 2025-09-16 20:00"
@@ -246,6 +249,65 @@ Enhanced: Query "this Saturday after 6 PM" shows "Next runs on Saturday: 2025-09
 - **Target**: Ongoing learning project
 
 ## Known Issues / Backlog
+
+### Future Enhancement: Semantic Query Parsing
+
+**Problem**: Current combined query parsing relies on positional regex groups, leading to:
+- Complex pattern-specific conditional logic
+- Code duplication across pattern handlers  
+- Maintenance burden when adding new patterns
+- Fragile fallback logic that competes with specific handlers
+
+**Proposed Solution**: Semantic parsing approach that recognizes query components by meaning rather than position:
+
+```python
+# Instead of positional parsing:
+# groups = ("this", "Saturday", "after", "10 AM")  # Pattern-dependent positions
+
+# Use semantic extraction:
+semantics = {
+    'times': ['10 AM'],              # Extracted by time patterns
+    'time_relations': ['after'],     # Fixed vocabulary
+    'day_references': ['this Saturday'], # Day names + modifiers
+    'day_classifications': []        # weekends, weekdays, etc.
+}
+
+# Then combine semantically regardless of word order
+def apply_semantic_parsing(query_text):
+    semantics = extract_query_semantics(query_text)
+    criteria = QueryCriteria(query_type=QueryType.COMBINED)
+    
+    # Apply day semantics
+    if semantics['day_references']:
+        day_criteria = parse_day_semantics(semantics['day_references'])
+        criteria.update_from_day_criteria(day_criteria)
+    
+    # Apply time semantics (preserving order for "between X and Y")
+    if semantics['times'] and semantics['time_relations']:
+        apply_time_constraints(criteria, 
+                              semantics['time_relations'][0], 
+                              semantics['times'])
+    
+    return criteria
+```
+
+**Benefits**:
+- Query component categories are semantically distinct and recognizable
+- Word order becomes irrelevant for most queries
+- Easy to extend with new patterns
+- Eliminates complex positional logic
+- Natural handling of edge cases
+
+**Implementation Strategy**:
+1. Extract semantic components: `extract_time_values()`, `extract_day_references()`, etc.
+2. Create semantic combination logic
+3. Preserve order information where needed (e.g., "between X and Y")
+4. Migrate existing patterns incrementally
+5. Maintain backward compatibility during transition
+
+**Priority**: Medium (architectural improvement for long-term maintainability)  
+**Dependencies**: Current pattern parsing system stabilization  
+**Estimated Time**: 6-8 hours for full implementation
 
 - Unicode symbol rendering in xterm variants
   - Symptoms: Certain xterm terminals render bullets/arrows/cross marks incorrectly or as mojibake.
