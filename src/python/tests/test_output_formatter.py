@@ -151,30 +151,41 @@ class TestFormatListOutput:
     
     def test_single_job_formatting(self):
         """Test formatting a single job."""
-        result = _format_list_output([self.job], self.criteria, True, 3)
+        from cron_query.output_formatter import ColorConfig, PaginationConfig
+        colors = ColorConfig(enabled=False)
+        pagination = PaginationConfig(page_size=20, enabled=False)
+        result = _format_list_output([self.job], self.criteria, True, 3, colors, pagination, 1, False)
         
         assert "Jobs matching '8:00 AM':" in result
-        assert "1. 0 8 * * * /daily/job.sh" in result
+        assert "1. 0 8 * * *" in result
+        assert "/daily/job.sh" in result
         assert "Schedule:" in result
         assert "Next runs:" in result
         assert "Found 1 matching job." in result
     
     def test_multiple_jobs_formatting(self):
         """Test formatting multiple jobs."""
+        from cron_query.output_formatter import ColorConfig, PaginationConfig
         jobs = [
             self.job,
             CronJob("30", "8", "*", "*", "*", "/morning/job.sh", "30 8 * * * /morning/job.sh")
         ]
+        colors = ColorConfig(enabled=False)
+        pagination = PaginationConfig(page_size=20, enabled=False)
+        result = _format_list_output(jobs, self.criteria, True, 2, colors, pagination, 1, False)
         
-        result = _format_list_output(jobs, self.criteria, True, 2)
-        
-        assert "1. 0 8 * * * /daily/job.sh" in result
-        assert "2. 30 8 * * * /morning/job.sh" in result
+        assert "1. 0 8 * * *" in result
+        assert "/daily/job.sh" in result
+        assert "2. 30 8 * * *" in result
+        assert "/morning/job.sh" in result
         assert "Found 2 matching jobs." in result
     
     def test_empty_jobs_list(self):
         """Test formatting empty jobs list."""
-        result = _format_list_output([], self.criteria, True, 3)
+        from cron_query.output_formatter import ColorConfig, PaginationConfig
+        colors = ColorConfig(enabled=False)
+        pagination = PaginationConfig(page_size=20, enabled=False)
+        result = _format_list_output([], self.criteria, True, 3, colors, pagination, 1, False)
         
         assert "No jobs found matching '8:00 AM'" in result
         assert "This could mean:" in result
@@ -197,7 +208,10 @@ class TestFormatTableOutput:
     
     def test_table_structure(self):
         """Test table structure and formatting."""
-        result = _format_table_output(self.jobs, self.criteria, True, 1)
+        from cron_query.output_formatter import ColorConfig, PaginationConfig
+        colors = ColorConfig(enabled=False)
+        pagination = PaginationConfig(page_size=20, enabled=False)
+        result = _format_table_output(self.jobs, self.criteria, True, 1, colors, pagination, 1, False)
         
         # Check table structure
         assert "+" in result  # Table borders
@@ -210,7 +224,10 @@ class TestFormatTableOutput:
     
     def test_table_column_alignment(self):
         """Test that columns are properly aligned."""
-        result = _format_table_output(self.jobs, self.criteria, True, 1)
+        from cron_query.output_formatter import ColorConfig, PaginationConfig
+        colors = ColorConfig(enabled=False)
+        pagination = PaginationConfig(page_size=20, enabled=False)
+        result = _format_table_output(self.jobs, self.criteria, True, 1, colors, pagination, 1, False)
         
         lines = result.split('\n')
         # Find table lines (those with |)
@@ -221,7 +238,10 @@ class TestFormatTableOutput:
     
     def test_table_without_next_runs(self):
         """Test table without next run column."""
-        result = _format_table_output(self.jobs, self.criteria, False, 1)
+        from cron_query.output_formatter import ColorConfig, PaginationConfig
+        colors = ColorConfig(enabled=False)
+        pagination = PaginationConfig(page_size=20, enabled=False)
+        result = _format_table_output(self.jobs, self.criteria, False, 1, colors, pagination, 1, False)
         
         # Should not have Next Run column
         lines = result.split('\n')
@@ -249,7 +269,7 @@ class TestFormatJsonOutput:
     
     def test_json_structure(self):
         """Test JSON output structure."""
-        result = _format_json_output(self.jobs, self.criteria, True, 2)
+        result = _format_json_output(self.jobs, self.criteria, True, 2, False)
         data = json.loads(result)
         
         # Check top-level structure
@@ -276,7 +296,7 @@ class TestFormatJsonOutput:
     
     def test_json_without_next_runs(self):
         """Test JSON output without next runs."""
-        result = _format_json_output(self.jobs, self.criteria, False, 2)
+        result = _format_json_output(self.jobs, self.criteria, False, 2, False)
         data = json.loads(result)
         
         job = data["jobs"][0]
@@ -284,7 +304,7 @@ class TestFormatJsonOutput:
     
     def test_next_runs_format(self):
         """Test next runs format in JSON."""
-        result = _format_json_output(self.jobs, self.criteria, True, 2)
+        result = _format_json_output(self.jobs, self.criteria, True, 2, False)
         data = json.loads(result)
         
         job = data["jobs"][0]
