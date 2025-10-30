@@ -10,12 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - GitHub Actions CI/CD workflows for automated testing and releases
 
+## [1.1.2] - 2025-10-30
+
 ### Fixed
 - Test consolidation: moved tests from root to src/python/tests and updated CI configuration
 - Query parser regex escaping bug in "at" preposition normalization
 - Query parser minute validation for AM/PM time formats
 - Formatter function signatures and test assertions
 - JSON output test parsing for multi-line output
+- Bumpversion configuration for month/year pattern matching
 
 ## [1.1.1] - 2025-09-24
 
