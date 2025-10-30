@@ -1,0 +1,78 @@
+plugins {
+    id 'groovy'
+    id 'application'
+}
+
+group = 'com.cronquery'
+version = '1.1.1'
+
+repositories {
+    mavenCentral()
+}
+
+// Custom source directories to match project structure
+sourceSets {
+    main {
+        groovy {
+            srcDirs = ['src/groovy']
+        }
+    }
+    test {
+        groovy {
+            srcDirs = ['src/groovy/test']
+        }
+    }
+}
+
+dependencies {
+    // Groovy
+    implementation 'org.apache.groovy:groovy-all:4.0.15'
+    
+    // Cron parsing
+    implementation 'com.cronutils:cron-utils:9.2.1'
+    
+    // CLI argument parsing
+    implementation 'info.picocli:picocli:4.7.5'
+    implementation 'info.picocli:picocli-groovy:4.7.5'
+    
+    // YAML support (for potential config files)
+    implementation 'org.yaml:snakeyaml:2.2'
+    
+    // Date/time utilities
+    implementation 'joda-time:joda-time:2.12.5'
+    
+    // ANSI colors for terminal output
+    implementation 'org.fusesource.jansi:jansi:2.4.1'
+    
+    // Testing with Spock
+    testImplementation 'org.spockframework:spock-core:2.3-groovy-4.0'
+    testImplementation 'org.spockframework:spock-junit4:2.3-groovy-4.0'
+    
+    // JUnit for Spock
+    testImplementation 'junit:junit:4.13.2'
+}
+
+application {
+    mainClass = 'com.cronquery.Main'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// Create executable JAR
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.cronquery.Main'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
