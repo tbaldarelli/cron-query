@@ -145,3 +145,10 @@ cron-query-centos/
 
 # GitHub Actions workflows to ignore
 .github/ignore_workflows/
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+*.class
+hs_err_pid*
