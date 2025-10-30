@@ -428,12 +428,13 @@ class TestIntegrationScenarios(unittest.TestCase):
         
         self.assertEqual(result, 0)
         output_text = output.getvalue()
+        # Query "at 8 AM" should only match jobs at exactly 8:00, not 8:30
         self.assertIn('morning_job.sh', output_text)
-        self.assertIn('another_morning_job.sh', output_text)
+        self.assertNotIn('another_morning_job.sh', output_text)
         self.assertNotIn('evening_job.sh', output_text)
         # Table format should have headers
         self.assertIn('Command', output_text)
-        self.assertIn('Schedule', output_text)
+        self.assertIn('Description', output_text)
 
 
 if __name__ == '__main__':

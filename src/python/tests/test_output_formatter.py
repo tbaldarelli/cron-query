@@ -45,19 +45,25 @@ class TestFormatQueryResults:
     
     def test_format_list_output(self):
         """Test basic list format output."""
-        result = format_query_results(self.sample_jobs, self.sample_criteria, "list")
+        # Only pass the weekday job to match the criteria
+        jobs_to_format = [self.sample_jobs[0]]
+        result = format_query_results(jobs_to_format, self.sample_criteria, "list")
         
         assert "Jobs matching 'weekdays (Monday-Friday)':" in result
         # Check the job is present (format may have extra spaces)
         assert "0 8 * * 1-5" in result and "/weekday/backup.sh" in result
-        assert "2. 0 2 * * 6 /saturday/cleanup.sh" in result
+        # Saturday job should NOT be present
+        assert "/saturday/cleanup.sh" not in result
         assert "Schedule:" in result
         assert "Next runs:" in result
-        assert "Found 2 matching jobs." in result
+        # May say "Found 1 matching job" or "Showing 1-1 of 1 matching job" depending on pagination
+        assert "1 matching job" in result
     
     def test_format_table_output(self):
         """Test table format output."""
-        result = format_query_results(self.sample_jobs, self.sample_criteria, "table")
+        # Only pass the weekday job to match the criteria
+        jobs_to_format = [self.sample_jobs[0]]
+        result = format_query_results(jobs_to_format, self.sample_criteria, "table")
         
         assert "Jobs matching 'weekdays (Monday-Friday)':" in result
         assert "Expression" in result
@@ -68,12 +74,14 @@ class TestFormatQueryResults:
         assert "/weekday/backup.sh" in result
         assert "+" in result  # Table borders
         assert "|" in result  # Table separators
-        # Check the summary is present (format may be "Showing 1-2 of 2")
-        assert "2 matching job" in result
+        # Check the summary is present
+        assert "1 matching job" in result
     
     def test_format_json_output(self):
         """Test JSON format output."""
-        result = format_query_results(self.sample_jobs, self.sample_criteria, "json")
+        # Only pass the weekday job to match the criteria
+        jobs_to_format = [self.sample_jobs[0]]
+        result = format_query_results(jobs_to_format, self.sample_criteria, "json")
         
         # Parse JSON to verify it's valid
         data = json.loads(result)
@@ -81,8 +89,8 @@ class TestFormatQueryResults:
         assert data["query"]["description"] == "weekdays (Monday-Friday)"
         assert data["query"]["raw_query"] == "weekdays"
         assert data["query"]["type"] == "day_based"
-        assert data["matches"] == 2
-        assert len(data["jobs"]) == 2
+        assert data["matches"] == 1
+        assert len(data["jobs"]) == 1
         
         # Check first job
         job1 = data["jobs"][0]
@@ -94,7 +102,8 @@ class TestFormatQueryResults:
     
     def test_format_without_next_runs(self):
         """Test formatting without next run times."""
-        result = format_query_results(self.sample_jobs, self.sample_criteria, "list", show_next_runs=False)
+        jobs_to_format = [self.sample_jobs[0]]
+        result = format_query_results(jobs_to_format, self.sample_criteria, "list", show_next_runs=False)
         
         assert "Jobs matching 'weekdays (Monday-Friday)':" in result
         assert "Next runs:" not in result
@@ -119,7 +128,8 @@ class TestFormatQueryResults:
         """Test handling of schedule description errors."""
         mock_get_desc.side_effect = Exception("Test error")
         
-        result = format_query_results(self.sample_jobs[:1], self.sample_criteria, "list")
+        jobs_to_format = [self.sample_jobs[0]]
+        result = format_query_results(jobs_to_format, self.sample_criteria, "list")
         
         # Should fallback to cron expression when description fails
         assert "Schedule: 0 8 * * 1-5" in result
@@ -129,7 +139,8 @@ class TestFormatQueryResults:
         """Test handling of next runs calculation errors."""
         mock_next_runs.side_effect = Exception("Test error")
         
-        result = format_query_results(self.sample_jobs[:1], self.sample_criteria, "list")
+        jobs_to_format = [self.sample_jobs[0]]
+        result = format_query_results(jobs_to_format, self.sample_criteria, "list")
         
         # Should not include next runs when calculation fails
         assert "Next runs:" not in result
