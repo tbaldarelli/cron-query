@@ -196,17 +196,32 @@ class TestProcessQuery(unittest.TestCase):
         output_text = output.getvalue()
         
         # Verify it's valid JSON
-        lines = output_text.strip().split('\n')
-        json_line = None
-        for line in lines:
-            if line.startswith('{'):
-                json_line = line
-                break
+        # The JSON might span multiple lines, so try to parse the entire output
+        # or find the JSON object within the output
+        try:
+            # Try parsing the entire output as JSON first
+            parsed_json = json.loads(output_text.strip())
+        except json.JSONDecodeError:
+            # If that fails, look for a JSON object in the output
+            lines = output_text.strip().split('\n')
+            json_text = None
+            for i, line in enumerate(lines):
+                if line.startswith('{'):
+                    # Try to find the complete JSON object
+                    json_text = '\n'.join(lines[i:])
+                    # Try to parse from this point
+                    try:
+                        parsed_json = json.loads(json_text)
+                        break
+                    except json.JSONDecodeError:
+                        # Keep searching
+                        continue
+            else:
+                self.fail(f"Could not find valid JSON in output: {output_text}")
         
-        self.assertIsNotNone(json_line)
-        parsed_json = json.loads(json_line)
         self.assertIn('query', parsed_json)
-        self.assertIn('results', parsed_json)
+        # JSON output structure has 'jobs' and 'matches' keys, not 'results'
+        self.assertIn('jobs', parsed_json)
     
     @patch('cron_query.main.load_cron_jobs')
     def test_invalid_output_format(self, mock_load):
