@@ -11,8 +11,16 @@
 
 ### Git Commit Messages on Windows
 When running git commit commands on Windows PowerShell:
-- Always use single quotes around multi-line commit messages
-- Embed newlines directly in the string using `\n`
-- Format: `git commit -m "title\n\n- bullet point 1\n- bullet point 2"`
-- Do NOT use double quotes or here-strings for commit messages
-- This avoids PowerShell string parsing issues on Windows
+- Use double quotes and let PowerShell naturally continue the multi-line string
+- After opening quote, press Enter - PowerShell will show `>>` prompt for continuation
+- Type each line naturally, pressing Enter between lines
+- Close with final quote
+- Example format:
+  ```
+  git commit -m "title
+  
+  - bullet point 1
+  - bullet point 2"
+  ```
+- This creates literal newlines, not escape sequences
+- Do NOT use `\n` escape sequences or here-strings
