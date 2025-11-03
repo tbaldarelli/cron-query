@@ -165,20 +165,92 @@ and combined queries ("this Saturday after 10 AM")."""
                 return 1
             }
             
-            // TODO: Implement main query logic
-            println "Processing query: ${query}"
-            println "Format: ${format}"
-            println "Source: ${source}"
-            if (file) {
-                println "File: ${file}"
+            // Validate output format
+            if (!OutputFormatter.validateOutputFormat(format)) {
+                System.err.println OutputFormatter.formatErrorMessage(
+                    "Invalid format '${format}'. Available: ${OutputFormatter.getSupportedFormats().join(', ')}")
+                return 1
             }
             
-            return 0
+            try {
+                // Load cron jobs based on source
+                List<CronJob> cronJobs = loadCronJobs()
+                
+                if (!cronJobs) {
+                    System.err.println OutputFormatter.formatErrorMessage('No cron jobs found')
+                    return 1
+                }
+                
+                if (verbose) {
+                    println "Loaded ${cronJobs.size()} cron job(s) from ${source}"
+                }
+                
+                // Parse the query
+                QueryCriteria criteria = QueryParser.parseQuery(query)
+                
+                if (criteria.queryType == QueryType.UNKNOWN) {
+                    System.err.println OutputFormatter.formatErrorMessage(
+                        "Could not understand query: '${query}'")
+                    return 1
+                }
+                
+                if (verbose) {
+                    println "Query criteria: ${QueryParser.formatCriteriaDescription(criteria)}"
+                }
+                
+                // Find matching jobs
+                List<CronJob> matchingJobs = ScheduleAnalyzer.findMatchingJobs(cronJobs, criteria)
+                
+                // Format and display results
+                OutputFormatter formatter = new OutputFormatter(!noColor, true, 3)
+                String output = formatter.formatQueryResults(matchingJobs, criteria, format)
+                println output
+                
+                return 0
+                
+            } catch (QueryParseException e) {
+                System.err.println OutputFormatter.formatErrorMessage("Query error: ${e.message}")
+                if (verbose) {
+                    e.printStackTrace()
+                }
+                return 1
+            } catch (Exception e) {
+                System.err.println OutputFormatter.formatErrorMessage("Error: ${e.message}")
+                if (verbose) {
+                    e.printStackTrace()
+                }
+                return 1
+            }
             
         } finally {
             if (!noColor) {
                 AnsiConsole.systemUninstall()
             }
+        }
+    }
+    
+    /**
+     * Load cron jobs based on source option.
+     */
+    private List<CronJob> loadCronJobs() {
+        if (file) {
+            // Load from specific file
+            return CronLoader.loadCrontabFromFile(file)
+        }
+        
+        switch (source.toLowerCase()) {
+            case 'user':
+                return CronLoader.loadUserCrontab()
+            case 'system':
+                // System crontabs not fully implemented, use user for now
+                System.err.println 'Warning: System crontabs not fully implemented, using user crontab'
+                return CronLoader.loadUserCrontab()
+            case 'all':
+                // Load both user and system (using user for now)
+                System.err.println 'Warning: System crontabs not fully implemented, using user crontab only'
+                return CronLoader.loadUserCrontab()
+            default:
+                throw new IllegalArgumentException("Invalid source: ${source}")
         }
     }
     
