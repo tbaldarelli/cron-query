@@ -61,3 +61,64 @@ jobs:
     - name: Run tests
       run: |
         pytest src/python/tests/ --cov=src/python/cron_query --cov-report=term-missing
+
+  # Groovy/Gradle testing
+  test-groovy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      
+    - name: Run Groovy tests
+      run: |
+        cd src/groovy
+        ./gradlew test
+        
+    - name: Publish Test Report
+      uses: mikepenz/action-junit-report@v4
+      if: success() || failure()
+      with:
+        report_paths: 'src/groovy/build/test-results/test/TEST-*.xml'
+        check_name: 'Groovy Test Results'
+        
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: groovy-test-results
+        path: src/groovy/build/reports/tests/test/
+
+  # Groovy/Gradle testing on Windows
+  test-groovy-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      
+    - name: Run Groovy tests
+      run: |
+        cd src/groovy
+        .\gradlew.bat test
+        
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: groovy-test-results-windows
+        path: src/groovy/build/reports/tests/test/
