@@ -408,4 +408,39 @@ class QueryParserSpec extends Specification {
         criteria.daysOfWeek == [6] as Set
         criteria.isTimeAfter == true
     }
+    
+    def "parseQuery should prioritize 12-hour time format over 24-hour format for ambiguous inputs"() {
+        given: "an ambiguous time input that could be 12-hour with AM/PM"
+        def query12h = "3:45 PM"
+        def query24h = "3:45"  // Without AM/PM, treated as 24-hour
+        
+        when: "parsing the 12-hour format query"
+        def criteria12h = QueryParser.parseQuery(query12h)
+        
+        and: "parsing the 24-hour format query"
+        def criteria24h = QueryParser.parseQuery(query24h)
+        
+        then: "the 12-hour format should be parsed correctly as 15:45"
+        criteria12h.queryType == QueryType.TIME_BASED
+        criteria12h.timeHour == 15
+        criteria12h.timeMinute == 45
+        
+        and: "the 24-hour format (without AM/PM) should be parsed as 3:45 (early morning)"
+        criteria24h.queryType == QueryType.TIME_BASED
+        criteria24h.timeHour == 3
+        criteria24h.timeMinute == 45
+    }
+    
+    def "parseQuery should accurately parse '3:45 PM' to 15:45"() {
+        given: "a time query in 12-hour format: 3:45 PM"
+        def query = "3:45 PM"
+        
+        when: "parsing the query"
+        def criteria = QueryParser.parseQuery(query)
+        
+        then: "it should parse to 24-hour time 15:45"
+        criteria.queryType == QueryType.TIME_BASED
+        criteria.timeHour == 15
+        criteria.timeMinute == 45
+    }
 }
