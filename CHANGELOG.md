@@ -6,13 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Fixed
-- Query parsing bugs, including where "jobs" keyword in combined day+time queries prevented filtering
 
 ### Added
 - GitHub Actions CI/CD workflows for automated testing and releases
 
-## [## [Unreleased]] - 2025-09-24
+## [1.1.2] - 2025-10-30
+
+### Fixed
+- Test consolidation: moved tests from root to src/python/tests and updated CI configuration
+- Query parser regex escaping bug in "at" preposition normalization
+- Query parser minute validation for AM/PM time formats
+- Formatter function signatures and test assertions
+- JSON output test parsing for multi-line output
+- Bumpversion configuration for month/year pattern matching
+
+## [1.1.1] - 2025-09-24
 
 ### Added
 
@@ -74,15 +82,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Documentation
 - **Planning Documents**: Updated `requirements.md` and `design.md` to reflect Unicode features
 - **Man Pages**: Updated both man page files with Unicode support and environment variable documentation
-- **Code Documentation**: Enhanced docstrings for new special character functionality
-
-## [Unreleased]
-
-### Planned
-- Additional special characters as needed
-- More robust wcwidth integration for character width detection
-- Optional CLI flags for character mode selection (`--ascii`, `--unicode`)
-
----
-
-**Note**: This changelog represents the completion of Unicode support and template enhancement features. All changes maintain backward compatibility while adding significant new functionality for improved cross-platform and cross-terminal user experience.
+|- **Code Documentation**: Enhanced docstrings for new special character functionality
+|
+|---
+|
+|**Note**: This changelog represents the completion of Unicode support and template enhancement features. All changes maintain backward compatibility while adding significant new functionality for improved cross-platform and cross-terminal user experience.
