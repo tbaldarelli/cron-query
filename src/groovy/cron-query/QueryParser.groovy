@@ -363,17 +363,8 @@ class QueryParser {
     private static Tuple2<Integer, Integer> parseSingleTime(String timeStr) {
         String normalized = timeStr.trim().toLowerCase()
         
-        // Try 24-hour format (14:30, 9:00)
-        Matcher match24h = (normalized =~ /(\d{1,2}):(\d{2})/)
-        if (match24h) {
-            int hour = match24h.group(1) as int
-            int minute = match24h.group(2) as int
-            if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
-                return new Tuple2(hour, minute)
-            }
-        }
-        
-        // Try 12-hour format (8 AM, 3:30 PM)
+        // Try 12-hour format FIRST (8 AM, 3:30 PM)
+        // This must come before 24-hour to avoid matching "3:45" in "3:45 PM"
         Matcher match12h = (normalized =~ /(\d{1,2})(?::(\d{2}))?\s*(am|pm)/)
         if (match12h) {
             int hour = match12h.group(1) as int
@@ -387,6 +378,16 @@ class QueryParser {
                 hour = 0
             }
             
+            if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                return new Tuple2(hour, minute)
+            }
+        }
+        
+        // Try 24-hour format (14:30, 9:00)
+        Matcher match24h = (normalized =~ /(\d{1,2}):(\d{2})/)
+        if (match24h) {
+            int hour = match24h.group(1) as int
+            int minute = match24h.group(2) as int
             if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
                 return new Tuple2(hour, minute)
             }

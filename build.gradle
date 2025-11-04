@@ -14,7 +14,7 @@ repositories {
 sourceSets {
     main {
         groovy {
-            srcDirs = ['src/groovy']
+            srcDirs = ['src/groovy/cron-query']
         }
     }
     test {
@@ -49,10 +49,7 @@ dependencies {
     
     // Testing with Spock
     testImplementation 'org.spockframework:spock-core:2.3-groovy-4.0'
-    testImplementation 'org.spockframework:spock-junit4:2.3-groovy-4.0'
-    
-    // JUnit for Spock
-    testImplementation 'junit:junit:4.13.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 application {
