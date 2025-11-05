@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - GitHub Actions CI/CD workflows for automated testing and releases
 
-## [1.1.2] - 2025-10-30
+## [## [Unreleased]] - 2025-10-30
 
 ### Fixed
 - Test consolidation: moved tests from root to src/python/tests and updated CI configuration
