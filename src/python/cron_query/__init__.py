@@ -6,6 +6,6 @@ Addresses the complexity of understanding when cron jobs will execute, particula
 the intricate logic of day-of-month vs day-of-week intersections.
 """
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 __author__ = "Anthony Baldarelli"
 __description__ = "Query crontab schedules with natural language"
