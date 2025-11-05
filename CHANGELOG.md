@@ -7,10 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.2] - 2025-11-05
+
+### Added
+- Groovy implementation of cron-query tool
+- Build configuration for JAR distribution
+
+### Fixed
+- Bumpversion configuration for proper version and month updates
+- Test directory consolidation and CI configuration
+
+## [1.2.1] - 2025-11-04
+
+### Fixed
+- Bumpversion configuration fixes and testing
+
+## [1.2.0] - 2025-10-30
+
 ### Added
 - GitHub Actions CI/CD workflows for automated testing and releases
-
-## [## [Unreleased]] - 2025-10-30
 
 ### Fixed
 - Test consolidation: moved tests from root to src/python/tests and updated CI configuration
