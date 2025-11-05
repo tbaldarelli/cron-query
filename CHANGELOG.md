@@ -7,9 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- GitHub Actions CI/CD workflows for automated testing and releases
-
 ## [1.2.2] - 2025-11-05
 
 ### Added
@@ -26,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bumpversion configuration fixes and testing
 
 ## [1.2.0] - 2025-10-30
+
+### Added
+- GitHub Actions CI/CD workflows for automated testing and releases
 
 ### Fixed
 - Test consolidation: moved tests from root to src/python/tests and updated CI configuration
