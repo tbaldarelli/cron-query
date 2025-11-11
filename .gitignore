@@ -149,6 +149,7 @@ cron-query-centos/
 # Gradle
 .gradle/
 build/
+bin/
 !gradle/wrapper/gradle-wrapper.jar
 *.class
 hs_err_pid*
