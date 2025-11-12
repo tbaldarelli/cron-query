@@ -62,8 +62,8 @@ test_groovy:
 #     - master
 #     - merge_requests
 
-# Release job
-release:
+# Build release artifacts
+build_release:
   stage: release
   image: python:3.11
   before_script:
@@ -80,6 +80,19 @@ release:
       - dist/*.whl
       - dist/*.tar.gz
       - build/libs/*.jar
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v/
+
+# Create GitLab release
+create_release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  needs:
+    - job: build_release
+      artifacts: true
+  script:
+    - echo "Creating release for $CI_COMMIT_TAG"
   rules:
     - if: $CI_COMMIT_TAG =~ /^v/
   release:
@@ -88,6 +101,6 @@ release:
     assets:
       links:
         - name: "Python wheel"
-          url: "$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/browse/dist/"
+          url: "$CI_PROJECT_URL/-/jobs/artifacts/$CI_COMMIT_TAG/browse/dist?job=build_release"
         - name: "Groovy JAR"
-          url: "$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/browse/build/libs/"
+          url: "$CI_PROJECT_URL/-/jobs/artifacts/$CI_COMMIT_TAG/browse/build/libs?job=build_release"
