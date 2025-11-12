@@ -5,6 +5,7 @@ Unit tests for cron_loader module.
 
 import pytest
 import sys
+import shutil
 from unittest.mock import patch, MagicMock
 import subprocess
 
@@ -16,6 +17,10 @@ from cron_query.cron_loader import (
     _validate_cron_fields,
     SPECIAL_KEYWORDS
 )
+
+# Check if crontab command is available
+HAS_CRONTAB = shutil.which('crontab') is not None
+requires_crontab = pytest.mark.skipif(not HAS_CRONTAB, reason="crontab command not available")
 
 
 class TestCronJob:
@@ -409,6 +414,7 @@ class TestSpecialKeywords:
 class TestIntegration:
     """Integration tests combining multiple components."""
     
+    @requires_crontab
     def test_mock_data_parsing(self):
         """Test that all mock data parses correctly."""
         jobs = load_user_crontab()  # Will use mock data on Windows
