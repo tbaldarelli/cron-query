@@ -229,7 +229,10 @@
     - Add volume mount for test crontab
     - _Requirements: 4.1, 4.2, 4.3_
 
-- [ ] 12. Copy test crontab file to resources
+- [x] 12. Copy test crontab file to resources
+
+
+
   - Copy `test_crontab.txt` from project root to `src/main/resources/`
   - Copy to `src/test/resources/` for testing
   - _Requirements: 8.4_
