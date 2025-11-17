@@ -1,8 +1,11 @@
 package com.cronquery.service.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Supported output formats for query responses.
  */
+@Schema(description = "Output format for query results", enumAsRef = true)
 public enum OutputFormat {
     JSON,
     CSV,

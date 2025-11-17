@@ -134,26 +134,40 @@
     - Support JSON (default), CSV, and YAML output
     - _Requirements: 1.3_
 
-- [ ] 8. Configure Spring Boot Actuator and observability
-  - [ ] 8.1 Enable and configure Actuator endpoints
+- [x] 8. Configure Spring Boot Actuator and observability
+
+
+
+
+  - [x] 8.1 Enable and configure Actuator endpoints
+
+
     - Add Actuator dependency
     - Configure health, info, and prometheus endpoints
     - Expose endpoints in application.yml
     - _Requirements: 5.1, 5.3, 5.4_
 
-  - [ ] 8.2 Implement custom health indicators
+  - [x] 8.2 Implement custom health indicators
+
+
     - Create custom health indicator for crontab loader
     - Create custom health indicator for Groovy JAR integration
     - Include source information and job count in health details
     - _Requirements: 5.2_
 
-  - [ ] 8.3 Configure metrics
+  - [x] 8.3 Configure metrics
+
+
     - Add Micrometer dependency
     - Configure Prometheus metrics export
     - Add custom metrics for requests, Groovy JAR invocations, and errors
     - _Requirements: 5.5_
 
-- [ ] 9. Configure OpenAPI/Swagger documentation
+- [x] 9. Configure OpenAPI/Swagger documentation
+
+
+
+
   - Add SpringDoc OpenAPI dependency
   - Create `OpenApiConfig` configuration class
   - Add API metadata (title, version, description)
