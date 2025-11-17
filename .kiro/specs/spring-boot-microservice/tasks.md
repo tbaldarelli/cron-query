@@ -237,7 +237,10 @@
   - Copy to `src/test/resources/` for testing
   - _Requirements: 8.4_
 
-- [ ] 13. Create README documentation
+- [x] 13. Create README documentation
+
+
+
   - Document project overview and purpose
   - Document API endpoints with examples
   - Document configuration options
