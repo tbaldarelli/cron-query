@@ -286,7 +286,12 @@
     - Test error scenarios
     - _Requirements: 3.2, 3.3, 3.4_
 
-- [ ] 16. Build and test locally
+- [x] 16. Build and test locally
+
+
+
+
+
   - Run Maven build to download Groovy JAR
   - Build application JAR
   - Run application with test profile

@@ -40,12 +40,20 @@ public class CorsConfig implements WebMvcConfigurer {
         List<String> methods = parseCommaSeparatedValues(allowedMethods);
         List<String> headers = parseCommaSeparatedValues(allowedHeaders);
 
-        registry.addMapping("/**")
-                .allowedOrigins(origins.toArray(new String[0]))
+        var mapping = registry.addMapping("/**")
                 .allowedMethods(methods.toArray(new String[0]))
                 .allowedHeaders(headers.toArray(new String[0]))
-                .allowCredentials(allowCredentials)
                 .maxAge(maxAge);
+
+        // When allowCredentials is true, we cannot use "*" for origins
+        // Use allowedOriginPatterns instead
+        if (allowCredentials && origins.contains("*")) {
+            mapping.allowedOriginPatterns("*")
+                   .allowCredentials(true);
+        } else {
+            mapping.allowedOrigins(origins.toArray(new String[0]))
+                   .allowCredentials(allowCredentials);
+        }
     }
 
     @Bean
@@ -56,7 +64,14 @@ public class CorsConfig implements WebMvcConfigurer {
         List<String> methods = parseCommaSeparatedValues(allowedMethods);
         List<String> headers = parseCommaSeparatedValues(allowedHeaders);
 
-        configuration.setAllowedOrigins(origins);
+        // When allowCredentials is true, we cannot use "*" for origins
+        // Use allowedOriginPatterns instead
+        if (allowCredentials && origins.contains("*")) {
+            configuration.setAllowedOriginPatterns(List.of("*"));
+        } else {
+            configuration.setAllowedOrigins(origins);
+        }
+        
         configuration.setAllowedMethods(methods);
         configuration.setAllowedHeaders(headers);
         configuration.setAllowCredentials(allowCredentials);
