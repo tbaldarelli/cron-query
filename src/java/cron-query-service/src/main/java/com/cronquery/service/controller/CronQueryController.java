@@ -7,6 +7,8 @@ import com.cronquery.service.model.QueryRequest;
 import com.cronquery.service.model.QueryResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -39,16 +41,24 @@ public class CronQueryController {
     private final CronQueryService cronQueryService;
     private final ObjectMapper jsonMapper;
     private final ObjectMapper yamlMapper;
+    private final Counter apiRequestCounter;
+    private final Timer apiRequestTimer;
 
     /**
      * Constructor with dependency injection.
      * 
      * @param cronQueryService The service for executing cron queries
+     * @param apiRequestCounter Counter for API requests
+     * @param apiRequestTimer Timer for API request duration
      */
-    public CronQueryController(CronQueryService cronQueryService) {
+    public CronQueryController(CronQueryService cronQueryService,
+                               Counter apiRequestCounter,
+                               Timer apiRequestTimer) {
         this.cronQueryService = cronQueryService;
         this.jsonMapper = new ObjectMapper();
         this.yamlMapper = new ObjectMapper(new YAMLFactory());
+        this.apiRequestCounter = apiRequestCounter;
+        this.apiRequestTimer = apiRequestTimer;
     }
 
     /**
@@ -171,28 +181,34 @@ public class CronQueryController {
         logger.info("Received query request - query: {}, day: {}, time: {}, timeRange: {}, format: {}", 
                    query, day, time, timeRange, format);
         
-        // Build query request
-        QueryRequest request = new QueryRequest();
-        request.setQuery(query);
-        request.setDay(day);
-        request.setTime(time);
-        request.setTimeRange(timeRange);
-        request.setFormat(OutputFormat.fromString(format));
+        // Track API request
+        apiRequestCounter.increment();
         
-        // Execute query
-        QueryResponse response = cronQueryService.executeQuery(request);
-        
-        // Format response based on requested format
-        String formattedResponse = formatResponse(response, request.getFormat());
-        String contentType = getContentType(request.getFormat());
-        
-        logger.info("Query completed successfully - found {} jobs in {}ms", 
-                   response.getTotalCount(), response.getExecutionTimeMs());
-        
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.parseMediaType(contentType))
-                .body(formattedResponse);
+        // Execute query with timing
+        return apiRequestTimer.record(() -> {
+            // Build query request
+            QueryRequest request = new QueryRequest();
+            request.setQuery(query);
+            request.setDay(day);
+            request.setTime(time);
+            request.setTimeRange(timeRange);
+            request.setFormat(OutputFormat.fromString(format));
+            
+            // Execute query
+            QueryResponse response = cronQueryService.executeQuery(request);
+            
+            // Format response based on requested format
+            String formattedResponse = formatResponse(response, request.getFormat());
+            String contentType = getContentType(request.getFormat());
+            
+            logger.info("Query completed successfully - found {} jobs in {}ms", 
+                       response.getTotalCount(), response.getExecutionTimeMs());
+            
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .body(formattedResponse);
+        });
     }
 
     /**

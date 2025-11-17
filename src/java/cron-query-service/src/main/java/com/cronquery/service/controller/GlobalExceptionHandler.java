@@ -5,6 +5,8 @@ import com.cronquery.service.exception.CrontabLoadException;
 import com.cronquery.service.exception.GroovyJarException;
 import com.cronquery.service.exception.InvalidQueryException;
 import com.cronquery.service.model.ErrorResponse;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    
+    private final MeterRegistry meterRegistry;
+    
+    public GlobalExceptionHandler(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+    }
 
     /**
      * Handle InvalidQueryException - client errors (HTTP 400).
@@ -33,6 +41,11 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
         
         logger.warn("Invalid query request: {} - Path: {}", ex.getMessage(), request.getRequestURI());
+        
+        // Track error metric
+        meterRegistry.counter("cronquery.errors.total", 
+            "type", "InvalidQueryException",
+            "status", "400").increment();
         
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
@@ -55,6 +68,11 @@ public class GlobalExceptionHandler {
         
         logger.error("Failed to load crontab data: {} - Path: {}", ex.getMessage(), request.getRequestURI(), ex);
         
+        // Track error metric
+        meterRegistry.counter("cronquery.errors.total", 
+            "type", "CrontabLoadException",
+            "status", "500").increment();
+        
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
@@ -75,6 +93,11 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
         
         logger.error("Groovy JAR integration error: {} - Path: {}", ex.getMessage(), request.getRequestURI(), ex);
+        
+        // Track error metric
+        meterRegistry.counter("cronquery.errors.total", 
+            "type", "GroovyJarException",
+            "status", "500").increment();
         
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -97,6 +120,11 @@ public class GlobalExceptionHandler {
         
         logger.error("Cron query error: {} - Path: {}", ex.getMessage(), request.getRequestURI(), ex);
         
+        // Track error metric
+        meterRegistry.counter("cronquery.errors.total", 
+            "type", "CronQueryException",
+            "status", "500").increment();
+        
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
@@ -117,6 +145,11 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
         
         logger.error("Unexpected error: {} - Path: {}", ex.getMessage(), request.getRequestURI(), ex);
+        
+        // Track error metric
+        meterRegistry.counter("cronquery.errors.total", 
+            "type", "UnexpectedException",
+            "status", "500").increment();
         
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),

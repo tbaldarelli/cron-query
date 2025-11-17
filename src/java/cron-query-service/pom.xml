@@ -79,6 +79,13 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        
         <plugins>
             <!-- Maven Download Plugin to fetch Groovy JAR from GitHub releases -->
             <plugin>

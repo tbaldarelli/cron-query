@@ -9,6 +9,8 @@ import com.cronquery.service.model.CronJob;
 import com.cronquery.service.model.HealthStatus;
 import com.cronquery.service.model.QueryRequest;
 import com.cronquery.service.model.QueryResponse;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -31,16 +33,29 @@ public class CronQueryServiceImpl implements CronQueryService {
     
     private final CrontabLoader crontabLoader;
     private final GroovyJarAdapter groovyJarAdapter;
+    private final Counter groovyJarInvocationCounter;
+    private final Timer groovyJarExecutionTimer;
+    private final Counter errorCounter;
     
     /**
      * Constructor with dependency injection.
      * 
      * @param crontabLoader The crontab loader for accessing cron data
      * @param groovyJarAdapter The Groovy JAR adapter for query execution
+     * @param groovyJarInvocationCounter Counter for Groovy JAR invocations
+     * @param groovyJarExecutionTimer Timer for Groovy JAR execution duration
+     * @param errorCounter Counter for errors
      */
-    public CronQueryServiceImpl(CrontabLoader crontabLoader, GroovyJarAdapter groovyJarAdapter) {
+    public CronQueryServiceImpl(CrontabLoader crontabLoader, 
+                                GroovyJarAdapter groovyJarAdapter,
+                                Counter groovyJarInvocationCounter,
+                                Timer groovyJarExecutionTimer,
+                                Counter errorCounter) {
         this.crontabLoader = crontabLoader;
         this.groovyJarAdapter = groovyJarAdapter;
+        this.groovyJarInvocationCounter = groovyJarInvocationCounter;
+        this.groovyJarExecutionTimer = groovyJarExecutionTimer;
+        this.errorCounter = errorCounter;
     }
     
     @Override
@@ -58,8 +73,11 @@ public class CronQueryServiceImpl implements CronQueryService {
             String crontabContent = crontabLoader.loadCrontabData();
             logger.debug("Loaded crontab data from {} sources", crontabLoader.getActiveSources().size());
             
-            // Execute query using Groovy JAR
-            List<CronJob> matchingJobs = groovyJarAdapter.queryJobs(request, crontabContent);
+            // Execute query using Groovy JAR with metrics tracking
+            groovyJarInvocationCounter.increment();
+            List<CronJob> matchingJobs = groovyJarExecutionTimer.record(() -> 
+                groovyJarAdapter.queryJobs(request, crontabContent)
+            );
             logger.debug("Query returned {} matching jobs", matchingJobs.size());
             
             // Calculate execution time
@@ -79,12 +97,15 @@ public class CronQueryServiceImpl implements CronQueryService {
             
         } catch (CrontabLoadException e) {
             logger.error("Failed to load crontab data", e);
+            errorCounter.increment();
             throw e;
         } catch (GroovyJarException e) {
             logger.error("Failed to execute query with Groovy JAR", e);
+            errorCounter.increment();
             throw e;
         } catch (Exception e) {
             logger.error("Unexpected error during query execution", e);
+            errorCounter.increment();
             throw new GroovyJarException("Unexpected error during query execution: " + e.getMessage(), e);
         }
     }
@@ -97,8 +118,11 @@ public class CronQueryServiceImpl implements CronQueryService {
             // Load crontab data
             String crontabContent = crontabLoader.loadCrontabData();
             
-            // Load all jobs using Groovy JAR
-            List<CronJob> allJobs = groovyJarAdapter.loadAllJobs(crontabContent);
+            // Load all jobs using Groovy JAR with metrics tracking
+            groovyJarInvocationCounter.increment();
+            List<CronJob> allJobs = groovyJarExecutionTimer.record(() -> 
+                groovyJarAdapter.loadAllJobs(crontabContent)
+            );
             logger.info("Loaded {} total jobs from {} sources", 
                        allJobs.size(), crontabLoader.getActiveSources().size());
             
@@ -106,12 +130,15 @@ public class CronQueryServiceImpl implements CronQueryService {
             
         } catch (CrontabLoadException e) {
             logger.error("Failed to load crontab data", e);
+            errorCounter.increment();
             throw e;
         } catch (GroovyJarException e) {
             logger.error("Failed to load jobs with Groovy JAR", e);
+            errorCounter.increment();
             throw e;
         } catch (Exception e) {
             logger.error("Unexpected error while loading all jobs", e);
+            errorCounter.increment();
             throw new GroovyJarException("Unexpected error while loading jobs: " + e.getMessage(), e);
         }
     }
