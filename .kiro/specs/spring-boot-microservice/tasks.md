@@ -101,7 +101,11 @@
     - Handle Groovy-specific exceptions
     - _Requirements: 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 6. Implement service layer
+- [x] 6. Implement service layer
+
+
+
+
   - Create `CronQueryService` interface
   - Implement `CronQueryServiceImpl` with business logic
   - Orchestrate crontab loading and Groovy JAR invocation
