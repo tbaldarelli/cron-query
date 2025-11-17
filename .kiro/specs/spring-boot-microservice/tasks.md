@@ -175,8 +175,15 @@
   - Document error responses
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-- [ ] 10. Create application configuration files
-  - [ ] 10.1 Create base application.yml
+- [x] 10. Create application configuration files
+
+
+
+
+
+  - [x] 10.1 Create base application.yml
+
+
     - Configure server port with environment variable support
     - Configure crontab sources
     - Configure logging levels
@@ -184,18 +191,29 @@
     - Configure OpenAPI settings
     - _Requirements: 7.1, 7.2, 7.3_
 
-  - [ ] 10.2 Create profile-specific configurations
+  - [x] 10.2 Create profile-specific configurations
+
+
     - Create `application-dev.yml` for development (uses test file)
     - Create `application-prod.yml` for production (uses system crontabs)
     - _Requirements: 7.1, 7.2, 7.3, 8.1_
 
-  - [ ] 10.3 Add CORS configuration
+  - [x] 10.3 Add CORS configuration
+
+
     - Create CORS configuration class
     - Support configurable allowed origins
     - _Requirements: 7.4_
 
-- [ ] 11. Create Dockerfile and Docker Compose configuration
-  - [ ] 11.1 Create multi-stage Dockerfile
+- [x] 11. Create Dockerfile and Docker Compose configuration
+
+
+
+
+
+  - [x] 11.1 Create multi-stage Dockerfile
+
+
     - Implement build stage with Maven and JDK
     - Implement runtime stage with JRE
     - Copy application JAR and test crontab file
@@ -203,7 +221,9 @@
     - Expose port 8080
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-  - [ ] 11.2 Create docker-compose.yml
+
+  - [x] 11.2 Create docker-compose.yml
+
     - Configure service with build context
     - Map ports and environment variables
     - Add volume mount for test crontab
