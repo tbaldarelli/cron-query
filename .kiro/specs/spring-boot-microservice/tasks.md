@@ -300,7 +300,13 @@
   - Verify Swagger UI
   - _Requirements: All_
 
-- [ ] 17. Build and test Docker image
+- [x] 17. Build and test Docker image
+
+
+
+
+
+
   - Build Docker image
   - Run container locally
   - Test API endpoints in container

@@ -7,14 +7,13 @@ WORKDIR /app
 # Copy Maven configuration
 COPY pom.xml .
 
+# Copy lib directory with Groovy JAR (must exist before Maven build)
+COPY lib ./lib
+
 # Copy source code
 COPY src ./src
 
-# Create lib directory for Groovy JAR download
-RUN mkdir -p lib
-
 # Download dependencies and build the application
-# The Maven download plugin will fetch the Groovy JAR during the initialize phase
 RUN mvn clean package -DskipTests
 
 # Stage 2: Runtime stage with JRE

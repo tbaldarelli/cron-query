@@ -385,6 +385,36 @@ The container includes a health check that verifies the service is responding:
 docker ps  # Check health status in STATUS column
 ```
 
+### Automated Docker Testing
+
+The project includes automated test scripts for comprehensive Docker validation:
+
+**Linux/Mac:**
+```bash
+./test-docker.sh
+```
+
+**Windows PowerShell:**
+```powershell
+.\test-docker.ps1
+```
+
+These scripts automatically:
+- Build the Docker image
+- Start the container
+- Wait for application startup
+- Test all API endpoints
+- Verify health checks
+- Test multiple output formats
+- Validate Swagger UI
+- Check Prometheus metrics
+- Verify volume mounts
+- Monitor resource usage
+
+For detailed testing instructions, see [DOCKER_TESTING.md](DOCKER_TESTING.md).
+
+For a comprehensive validation checklist, see [DOCKER_VALIDATION_CHECKLIST.md](DOCKER_VALIDATION_CHECKLIST.md).
+
 ## CentOS Deployment
 
 ### Prerequisites
