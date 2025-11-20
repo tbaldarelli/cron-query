@@ -5,7 +5,6 @@ import com.cronquery.service.exception.CrontabLoadException;
 import com.cronquery.service.exception.GroovyJarException;
 import com.cronquery.service.exception.InvalidQueryException;
 import com.cronquery.service.model.ErrorResponse;
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;

@@ -17,12 +17,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -232,7 +232,7 @@ public class CronQueryController {
      * @param format The output format
      * @return Content type string
      */
-    private String getContentType(OutputFormat format) {
+    private @NonNull String getContentType(OutputFormat format) {
         return switch (format) {
             case CSV -> "text/csv";
             case YAML -> "application/x-yaml";

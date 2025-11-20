@@ -27,8 +27,8 @@ public class CrontabLoaderHealthIndicator implements HealthIndicator {
     @Override
     public Health health() {
         try {
-            // Attempt to load crontab data
-            String crontabData = crontabLoader.loadCrontabData();
+            // Attempt to load crontab data to verify accessibility
+            crontabLoader.loadCrontabData();
             List<String> activeSources = crontabLoader.getActiveSources();
             int jobCount = crontabLoader.getJobCount();
             

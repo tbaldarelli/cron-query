@@ -3,6 +3,7 @@ package com.cronquery.service.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -35,14 +36,14 @@ public class CorsConfig implements WebMvcConfigurer {
     private long maxAge;
 
     @Override
-    public void addCorsMappings(CorsRegistry registry) {
+    public void addCorsMappings(@NonNull CorsRegistry registry) {
         List<String> origins = parseCommaSeparatedValues(allowedOrigins);
         List<String> methods = parseCommaSeparatedValues(allowedMethods);
         List<String> headers = parseCommaSeparatedValues(allowedHeaders);
 
         var mapping = registry.addMapping("/**")
-                .allowedMethods(methods.toArray(new String[0]))
-                .allowedHeaders(headers.toArray(new String[0]))
+                .allowedMethods(methods.toArray(String[]::new))
+                .allowedHeaders(headers.toArray(String[]::new))
                 .maxAge(maxAge);
 
         // When allowCredentials is true, we cannot use "*" for origins
@@ -51,7 +52,7 @@ public class CorsConfig implements WebMvcConfigurer {
             mapping.allowedOriginPatterns("*")
                    .allowCredentials(true);
         } else {
-            mapping.allowedOrigins(origins.toArray(new String[0]))
+            mapping.allowedOrigins(origins.toArray(String[]::new))
                    .allowCredentials(allowCredentials);
         }
     }
@@ -86,8 +87,10 @@ public class CorsConfig implements WebMvcConfigurer {
     /**
      * Parse comma-separated values from configuration string.
      * Handles both single values and comma-separated lists.
+     * @return Non-null list of non-null strings
      */
-    private List<String> parseCommaSeparatedValues(String value) {
+    @SuppressWarnings("null")
+    private @NonNull List<String> parseCommaSeparatedValues(String value) {
         if (value == null || value.trim().isEmpty()) {
             return List.of("*");
         }

@@ -150,8 +150,8 @@ public class CronQueryServiceImpl implements CronQueryService {
         HealthStatus healthStatus = new HealthStatus();
         
         try {
-            // Check crontab loader
-            String crontabContent = crontabLoader.loadCrontabData();
+            // Check crontab loader.  Attempt to load crontab data to verify accessibility
+            crontabLoader.loadCrontabData();
             List<String> activeSources = crontabLoader.getActiveSources();
             int jobCount = crontabLoader.getJobCount();
             
