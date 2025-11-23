@@ -192,10 +192,11 @@ To change the test crontab:
 ### Delete Everything
 
 ```bash
-# Delete deployment and service
-kubectl delete -f deployment.yaml
+# Delete all resources (recommended)
+kubectl delete -f kubernetes/
 
-# Delete configmap
+# Or delete individual files
+kubectl delete -f deployment.yaml
 kubectl delete -f configmap.yaml
 
 # Verify deletion
