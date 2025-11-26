@@ -16,19 +16,20 @@ management:
       show-details: always
       show-components: always
     info:
-      enabled: true
+      access: unrestricted
   health:
     defaults:
       enabled: true
-  metrics:
-    export:
-      prometheus:
+  prometheus:
+    metrics:
+      export:
         enabled: true
+  metrics:
     distribution:
       percentiles-histogram:
-        http.server.requests: true
-        cronquery.requests.duration: true
-        cronquery.groovyjar.duration: true
+        "[http.server.requests]": true
+        "[cronquery.requests.duration]": true
+        "[cronquery.groovyjar.duration]": true
     tags:
       application: ${spring.application.name}
       environment: ${ENVIRONMENT:dev}
@@ -82,9 +83,9 @@ cronquery:
 logging:
   level:
     root: ${LOG_LEVEL:INFO}
-    com.cronquery: ${CRONQUERY_LOG_LEVEL:INFO}
-    org.springframework: ${SPRING_LOG_LEVEL:INFO}
-    org.springframework.web: ${SPRING_WEB_LOG_LEVEL:INFO}
+    "[com.cronquery]": ${CRONQUERY_LOG_LEVEL:INFO}
+    "[org.springframework]": ${SPRING_LOG_LEVEL:INFO}
+    "[org.springframework.web]": ${SPRING_WEB_LOG_LEVEL:INFO}
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
