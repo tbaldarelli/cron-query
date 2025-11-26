@@ -1,6 +1,5 @@
 package com.cronquery.service.integration;
 
-import com.cronquery.service.exception.GroovyJarException;
 import com.cronquery.service.exception.InvalidQueryException;
 import com.cronquery.service.model.CronJob;
 import com.cronquery.service.model.OutputFormat;

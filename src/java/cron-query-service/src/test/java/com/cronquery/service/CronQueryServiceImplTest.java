@@ -20,7 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -54,6 +53,7 @@ class CronQueryServiceImplTest {
     private CronQueryServiceImpl service;
 
     @BeforeEach
+    @SuppressWarnings("unchecked")
     void setUp() {
         service = new CronQueryServiceImpl(
             crontabLoader,

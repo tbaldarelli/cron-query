@@ -4,7 +4,6 @@ import com.cronquery.service.CronQueryService;
 import com.cronquery.service.exception.CrontabLoadException;
 import com.cronquery.service.exception.InvalidQueryException;
 import com.cronquery.service.model.CronJob;
-import com.cronquery.service.model.OutputFormat;
 import com.cronquery.service.model.QueryResponse;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
@@ -13,12 +12,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,6 +43,7 @@ class CronQueryControllerTest {
     private CronQueryController controller;
 
     @BeforeEach
+    @SuppressWarnings("unchecked")
     void setUp() {
         controller = new CronQueryController(cronQueryService, apiRequestCounter, apiRequestTimer);
         
@@ -67,8 +67,10 @@ class CronQueryControllerTest {
         // Assert
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody().contains("\"totalCount\" : 2"));
-        assertTrue(response.getBody().contains("backup.sh"));
+        String body = response.getBody();
+        assertNotNull(body);
+        assertTrue(body.contains("\"totalCount\" : 2"));
+        assertTrue(body.contains("backup.sh"));
         verify(apiRequestCounter).increment();
         verify(cronQueryService).executeQuery(any());
     }
@@ -85,7 +87,9 @@ class CronQueryControllerTest {
         // Assert
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody().contains("\"totalCount\" : 2"));
+        String body = response.getBody();
+        assertNotNull(body);
+        assertTrue(body.contains("\"totalCount\" : 2"));
         verify(cronQueryService).executeQuery(any());
     }
 
@@ -100,10 +104,16 @@ class CronQueryControllerTest {
 
         // Assert
         assertNotNull(response);
+        HttpHeaders headers = response.getHeaders();
+        assertNotNull(headers);
+        MediaType contentType = headers.getContentType();
+        assertNotNull(contentType);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("text/csv", response.getHeaders().getContentType().toString());
-        assertTrue(response.getBody().contains("Schedule,Command,Source,User,Description,Next Runs"));
-        assertTrue(response.getBody().contains("backup.sh"));
+        assertEquals("text/csv", contentType.toString());
+        String body = response.getBody();
+        assertNotNull(body);
+        assertTrue(body.contains("Schedule,Command,Source,User,Description,Next Runs"));
+        assertTrue(body.contains("backup.sh"));
     }
 
     @Test
@@ -117,9 +127,15 @@ class CronQueryControllerTest {
 
         // Assert
         assertNotNull(response);
+        HttpHeaders headers = response.getHeaders();
+        assertNotNull(headers);
+        MediaType contentType = headers.getContentType();
+        assertNotNull(contentType);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("application/x-yaml", response.getHeaders().getContentType().toString());
-        assertTrue(response.getBody().contains("totalCount: 2"));
+        assertEquals("application/x-yaml", contentType.toString());
+        String body = response.getBody();
+        assertNotNull(body);
+        assertTrue(body.contains("totalCount: 2"));
     }
 
     @Test
@@ -179,7 +195,9 @@ class CronQueryControllerTest {
 
         // Assert
         assertNotNull(response);
-        assertTrue(response.getBody().contains("\""));  // Should be quoted due to comma
+        String body = response.getBody();
+        assertNotNull(body);
+        assertTrue(body.contains("\""));  // Should be quoted due to comma
     }
 
     @Test
@@ -202,7 +220,9 @@ class CronQueryControllerTest {
 
         // Assert
         assertNotNull(response);
-        assertTrue(response.getBody().contains("\"\""));  // Quotes should be escaped
+        String body = response.getBody();
+        assertNotNull(body);
+        assertTrue(body.contains("\"\""));  // Quotes should be escaped
     }
 
     /**
