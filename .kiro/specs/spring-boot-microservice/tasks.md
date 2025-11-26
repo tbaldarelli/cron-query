@@ -287,8 +287,17 @@
     - Test configuration handling
     - _Requirements: 2.4, 2.5, 3.2, 3.3, 8.1, 8.2_
 
-- [ ]* 15. Write integration tests
-  - [ ]* 15.1 Write API integration tests
+- [x] 15. Write integration tests
+
+
+
+
+
+
+  - [x] 15.1 Write API integration tests
+
+
+
     - Use `@SpringBootTest` with random port
     - Test full request/response cycle
     - Test different query types
@@ -296,7 +305,10 @@
     - Use test crontab file
     - _Requirements: 1.1, 1.2, 1.3_
 
-  - [ ]* 15.2 Write Groovy JAR integration tests
+  - [x] 15.2 Write Groovy JAR integration tests
+
+
+
     - Test actual Groovy JAR invocation
     - Verify query translation
     - Test error scenarios
@@ -329,3 +341,12 @@
   - Test with volume-mounted crontab file
   - Verify health checks work in container
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
+
+- [ ] 18. Add Spring Boot microservice to CI/CD pipelines
+
+  - Update `.gitlab-ci.yml` to include Spring Boot service testing and building
+  - Update `.github/workflows/test.yml` to include Maven tests
+  - Update `.github/workflows/release.yml` to build and publish Spring Boot JAR
+  - Ensure CI/CD runs unit tests, integration tests, and builds Docker image
+  - Configure artifact publishing for Spring Boot JAR in releases
+  - _Requirements: All (CI/CD integration for production readiness)_

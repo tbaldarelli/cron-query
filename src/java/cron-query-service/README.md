@@ -702,3 +702,18 @@ See main project LICENSE file.
 - [OpenAPI Documentation](OPENAPI_DOCUMENTATION.md)
 - [Docker Guide](DOCKER.md)
 - [Groovy JAR Integration](GROOVY_JAR_INTEGRATION.md)
+
+
+## Known Issues
+
+### Prometheus Endpoint
+
+The `/actuator/prometheus` endpoint is configured but not currently functional in Spring Boot 3.5.7. Investigation shows:
+
+- ✅ Micrometer Prometheus registry is working
+- ✅ Metrics are being collected and available at `/actuator/metrics`
+- ❌ Dedicated Prometheus scrape endpoint at `/actuator/prometheus` returns 500 error
+
+**Workaround**: Use `/actuator/metrics` for metrics access. For production Prometheus scraping, see `PROMETHEUS_ENDPOINT_NOTES.md` for detailed investigation findings and alternative solutions.
+
+This does not affect core functionality - all application features work correctly, and metrics are properly collected.
