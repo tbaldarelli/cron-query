@@ -51,7 +51,8 @@ test_spring_boot:
   image: maven:3.9-eclipse-temurin-21
   script:
     - cd src/java/cron-query-service
-    - mvn clean test
+    - mvn initialize
+    - mvn test
   artifacts:
     reports:
       junit: src/java/cron-query-service/target/surefire-reports/TEST-*.xml

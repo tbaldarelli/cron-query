@@ -131,10 +131,14 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: 'maven'
+    
+    - name: Download Groovy JAR dependency
+      working-directory: src/java/cron-query-service
+      run: mvn initialize
         
     - name: Run Maven tests
       working-directory: src/java/cron-query-service
-      run: mvn clean test
+      run: mvn test
         
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v4
@@ -162,10 +166,14 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: 'maven'
+    
+    - name: Download Groovy JAR dependency
+      working-directory: src/java/cron-query-service
+      run: mvn initialize
         
     - name: Build and run integration tests
       working-directory: src/java/cron-query-service
-      run: mvn clean verify
+      run: mvn verify
         
     - name: Upload Integration Test Results
       if: always()
