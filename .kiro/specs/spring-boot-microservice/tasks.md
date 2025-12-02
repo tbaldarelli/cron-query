@@ -342,7 +342,12 @@
   - Verify health checks work in container
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 18. Add Spring Boot microservice to CI/CD pipelines
+- [x] 18. Add Spring Boot microservice to CI/CD pipelines
+
+
+
+
+
 
   - Update `.gitlab-ci.yml` to include Spring Boot service testing and building
   - Update `.github/workflows/test.yml` to include Maven tests
