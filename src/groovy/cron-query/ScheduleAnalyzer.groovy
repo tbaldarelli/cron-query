@@ -145,8 +145,9 @@ class ScheduleAnalyzer {
                 // Simple case: only day-of-week specified
                 return checkDayOfWeekField(job.dayOfWeek, targetDays)
             } else if (domSpecified) {
-                // Day-of-month only: doesn't match day-of-week queries
-                return false
+                // Day-of-month only with * for day-of-week means it runs every day
+                // which includes the target days (e.g., weekdays)
+                return true
             } else {
                 // Both are * - runs every day
                 return true
