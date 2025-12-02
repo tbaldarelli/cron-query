@@ -135,20 +135,21 @@ class ScheduleAnalyzer {
         
         try {
             // Check if both day-of-month and day-of-week are specified
-            boolean domSpecified = job.dayOfMonth != '*'
-            boolean dowSpecified = job.dayOfWeek != '*'
+            boolean domWildcard = job.dayOfMonth == '*'
+            boolean dowWildcard = job.dayOfWeek == '*'
             
-            if (domSpecified && dowSpecified) {
-                // Complex case: both specified - cron uses OR logic
+            if (!domWildcard && !dowWildcard) {
+                // Complex case: both DOM and DOW specified - cron uses OR logic
                 return checkComplexDayLogic(job, targetDays)
-            } else if (dowSpecified) {
-                // Simple case: only day-of-week specified
+            } else if (!dowWildcard) {
+                // Simple case: only day-of-week specified (DOM is *)
                 return checkDayOfWeekField(job.dayOfWeek, targetDays)
-            } else if (domSpecified) {
-                // Day-of-month only: doesn't match day-of-week queries
+            } else if (!domWildcard) {
+                // Specific day-of-month only (DOW is *): doesn't match day-of-week queries
+                // e.g., "15th of month" doesn't imply "every Monday"
                 return false
             } else {
-                // Both are * - runs every day
+                // Both are * - runs every day, which includes target days
                 return true
             }
         } catch (Exception e) {
