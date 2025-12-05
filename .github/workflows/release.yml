@@ -39,6 +39,11 @@ jobs:
       run: |
         ./gradlew build -x test
     
+    - name: Copy Groovy JAR for Spring Boot build
+      run: |
+        mkdir -p src/java/cron-query-service/lib
+        cp build/libs/cron-query-groovy-*.jar src/java/cron-query-service/lib/
+    
     - name: Build Spring Boot JAR
       working-directory: src/java/cron-query-service
       run: |

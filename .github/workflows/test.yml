@@ -132,9 +132,16 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
     
-    - name: Download Groovy JAR dependency
-      working-directory: src/java/cron-query-service
-      run: mvn initialize
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+    
+    - name: Build Groovy JAR
+      run: ./gradlew build -x test
+    
+    - name: Copy Groovy JAR for Spring Boot
+      run: |
+        mkdir -p src/java/cron-query-service/lib
+        cp build/libs/cron-query-groovy-*.jar src/java/cron-query-service/lib/
         
     - name: Run Maven tests
       working-directory: src/java/cron-query-service
@@ -167,9 +174,16 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
     
-    - name: Download Groovy JAR dependency
-      working-directory: src/java/cron-query-service
-      run: mvn initialize
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+    
+    - name: Build Groovy JAR
+      run: ./gradlew build -x test
+    
+    - name: Copy Groovy JAR for Spring Boot
+      run: |
+        mkdir -p src/java/cron-query-service/lib
+        cp build/libs/cron-query-groovy-*.jar src/java/cron-query-service/lib/
         
     - name: Build and run integration tests
       working-directory: src/java/cron-query-service

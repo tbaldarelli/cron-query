@@ -48,10 +48,12 @@ test_groovy:
 # Spring Boot microservice tests (Linux)
 test_spring_boot:
   stage: test
-  image: maven:3.9-eclipse-temurin-21
+  image: eclipse-temurin:21-jdk
   script:
+    - ./gradlew build -x test
+    - mkdir -p src/java/cron-query-service/lib
+    - cp build/libs/cron-query-groovy-*.jar src/java/cron-query-service/lib/
     - cd src/java/cron-query-service
-    - mvn initialize
     - mvn test
   artifacts:
     reports:
