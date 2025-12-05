@@ -1,0 +1,62 @@
+# Development Profile Configuration
+# This profile is designed for local development on Windows or systems without crontab access
+# It uses the test crontab file for consistent development experience
+
+spring:
+  application:
+    name: cron-query-service
+
+server:
+  port: ${SERVER_PORT:8080}
+
+cronquery:
+  crontab:
+    sources:
+      # Disable system crontab sources in development
+      - type: user
+        enabled: false
+      - type: system
+        path: /etc/crontab
+        enabled: false
+      - type: directory
+        path: /etc/cron.d
+        enabled: false
+      # Use test file as primary source
+      - type: file
+        path: ${CRONTAB_TEST_FILE:test_crontab.txt}
+        enabled: true
+        fallback: false
+  groovy-jar:
+    version: 1.2.2
+  cors:
+    # Allow all origins in development for easier testing
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
+    allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS}
+    allowed-headers: ${CORS_ALLOWED_HEADERS:*}
+    allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
+    max-age: ${CORS_MAX_AGE:3600}
+
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+    com.cronquery: ${CRONQUERY_LOG_LEVEL:DEBUG}
+    org.springframework: ${SPRING_LOG_LEVEL:INFO}
+    org.springframework.web: ${SPRING_WEB_LOG_LEVEL:DEBUG}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,env
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+
+info:
+  app:
+    profile: development
+    description: Development profile using test crontab file

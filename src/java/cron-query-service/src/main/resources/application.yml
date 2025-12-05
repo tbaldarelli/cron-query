@@ -1,0 +1,91 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: cron-query-service
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+    info:
+      access: unrestricted
+  health:
+    defaults:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+        "[cronquery.requests.duration]": true
+        "[cronquery.groovyjar.duration]": true
+    tags:
+      application: ${spring.application.name}
+      environment: ${ENVIRONMENT:dev}
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: Spring Boot microservice wrapper for cron-query Groovy implementation
+    version: @project.version@
+    encoding: @project.build.sourceEncoding@
+    java:
+      version: @java.version@
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+cronquery:
+  crontab:
+    sources:
+      - type: user
+        enabled: true
+      - type: system
+        path: /etc/crontab
+        enabled: true
+      - type: directory
+        path: /etc/cron.d
+        enabled: true
+      - type: file
+        path: ${CRONTAB_TEST_FILE:test_crontab.txt}
+        enabled: true
+        fallback: true
+  groovy-jar:
+    version: 1.2.2
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
+    allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS}
+    allowed-headers: ${CORS_ALLOWED_HEADERS:*}
+    allow-credentials: ${CORS_ALLOW_CREDENTIALS:false}
+    max-age: ${CORS_MAX_AGE:3600}
+
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+    "[com.cronquery]": ${CRONQUERY_LOG_LEVEL:INFO}
+    "[org.springframework]": ${SPRING_LOG_LEVEL:INFO}
+    "[org.springframework.web]": ${SPRING_WEB_LOG_LEVEL:INFO}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

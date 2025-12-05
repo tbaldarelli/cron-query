@@ -1,0 +1,74 @@
+# Production Profile Configuration
+# This profile is designed for deployment on Linux systems with real crontab access
+# It prioritizes system crontab sources and uses test file only as fallback
+
+spring:
+  application:
+    name: cron-query-service
+
+server:
+  port: ${SERVER_PORT:8080}
+
+cronquery:
+  crontab:
+    sources:
+      # Enable all system crontab sources in production
+      - type: user
+        enabled: true
+      - type: system
+        path: /etc/crontab
+        enabled: true
+      - type: directory
+        path: /etc/cron.d
+        enabled: true
+      # Test file as fallback only
+      - type: file
+        path: ${CRONTAB_TEST_FILE:test_crontab.txt}
+        enabled: true
+        fallback: true
+  groovy-jar:
+    version: 1.2.2
+  cors:
+    # Restrict origins in production - configure via environment variable
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8080}
+    allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,OPTIONS}
+    allowed-headers: ${CORS_ALLOWED_HEADERS:Content-Type,Authorization,X-Requested-With}
+    allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
+    max-age: ${CORS_MAX_AGE:3600}
+
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+    com.cronquery: ${CRONQUERY_LOG_LEVEL:INFO}
+    org.springframework: ${SPRING_LOG_LEVEL:WARN}
+    org.springframework.web: ${SPRING_WEB_LOG_LEVEL:WARN}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: ${LOG_FILE:/var/log/cron-query-service/application.log}
+    max-size: 10MB
+    max-history: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Limit exposed endpoints in production for security
+        include: health,info,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      environment: production
+
+info:
+  app:
+    profile: production
+    description: Production profile using system crontab sources

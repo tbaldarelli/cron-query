@@ -118,3 +118,66 @@ jobs:
       with:
         name: groovy-test-results-windows
         path: build/reports/tests/test/
+
+  # Spring Boot microservice testing
+  test-spring-boot:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: 'maven'
+    
+    - name: Download Groovy JAR dependency
+      working-directory: src/java/cron-query-service
+      run: mvn initialize
+        
+    - name: Run Maven tests
+      working-directory: src/java/cron-query-service
+      run: mvn test
+        
+    - name: Publish Test Report
+      uses: mikepenz/action-junit-report@v4
+      if: success() || failure()
+      with:
+        report_paths: 'src/java/cron-query-service/target/surefire-reports/TEST-*.xml'
+        check_name: 'Spring Boot Test Results'
+        
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: spring-boot-test-results
+        path: src/java/cron-query-service/target/surefire-reports/
+
+  # Spring Boot microservice integration tests
+  test-spring-boot-integration:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: 'maven'
+    
+    - name: Download Groovy JAR dependency
+      working-directory: src/java/cron-query-service
+      run: mvn initialize
+        
+    - name: Build and run integration tests
+      working-directory: src/java/cron-query-service
+      run: mvn verify
+        
+    - name: Upload Integration Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: spring-boot-integration-test-results
+        path: src/java/cron-query-service/target/failsafe-reports/

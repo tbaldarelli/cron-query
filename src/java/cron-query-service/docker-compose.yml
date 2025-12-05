@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  cron-query-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cron-query-service
+    ports:
+      - "${HOST_PORT:-8080}:8080"
+    environment:
+      # Server configuration
+      - SERVER_PORT=8080
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILE:-dev}
+      
+      # Crontab configuration
+      - CRONTAB_TEST_FILE=/app/test_crontab.txt
+      
+      # Logging configuration
+      - LOGGING_LEVEL_ROOT=${LOG_LEVEL:-INFO}
+      - LOGGING_LEVEL_COM_CRONQUERY=${APP_LOG_LEVEL:-DEBUG}
+      
+      # CORS configuration (optional)
+      - CORS_ALLOWED_ORIGINS=${CORS_ORIGINS:-*}
+    
+    volumes:
+      # Mount test crontab file from project root (3 levels up from cron-query-service)
+      # Or use CUSTOM_CRONTAB environment variable to specify a different file
+      - ${CUSTOM_CRONTAB:-../../../test_crontab.txt}:/app/test_crontab.txt:ro
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 40s
+      retries: 3
+    
+    restart: unless-stopped
+    
+    networks:
+      - cron-query-network
+
+networks:
+  cron-query-network:
+    driver: bridge

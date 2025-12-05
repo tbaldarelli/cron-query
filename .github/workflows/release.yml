@@ -38,6 +38,11 @@ jobs:
     - name: Build Groovy JAR
       run: |
         ./gradlew build -x test
+    
+    - name: Build Spring Boot JAR
+      working-directory: src/java/cron-query-service
+      run: |
+        mvn clean package -DskipTests
         
     - name: Extract version from tag
       id: get_version
@@ -55,6 +60,12 @@ jobs:
           echo "NOTES=Release ${{ steps.get_version.outputs.VERSION }}" >> $GITHUB_OUTPUT
         fi
     
+    - name: Build Docker image
+      working-directory: src/java/cron-query-service
+      run: |
+        docker build -t cron-query-service:${{ steps.get_version.outputs.VERSION }} .
+        docker save cron-query-service:${{ steps.get_version.outputs.VERSION }} -o ../../cron-query-service-docker-${{ steps.get_version.outputs.VERSION }}.tar
+    
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
@@ -62,6 +73,8 @@ jobs:
           dist/*.whl
           dist/*.tar.gz
           build/libs/*.jar
+          src/java/cron-query-service/target/cron-query-service-*.jar
+          cron-query-service-docker-*.tar
         body: ${{ steps.release_notes.outputs.NOTES }}
         draft: false
         prerelease: false

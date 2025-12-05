@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cron-query-config
+  labels:
+    app: cron-query-service
+data:
+  test_crontab.txt: |
+    # Test crontab for Kubernetes deployment
+    # This demonstrates ConfigMap usage for configuration files
+    
+    # Morning backup - weekdays at 8 AM
+    0 8 * * 1-5 /usr/bin/morning-backup.sh
+    
+    # Lunch reminder - every day at 12:30 PM
+    30 12 * * * /usr/bin/lunch-reminder.sh
+    
+    # Weekly report - Sundays at midnight
+    0 0 * * 0 /usr/bin/weekly-report.sh
+    
+    # Status check - every 2 hours
+    0 */2 * * * /usr/bin/check-status.sh
+    
+    # Database backup - every day at 2 AM
+    0 2 * * * /usr/bin/db-backup.sh
+    
+    # Log rotation - every day at 3 AM
+    0 3 * * * /usr/bin/rotate-logs.sh
+    
+    # Cleanup temp files - every 6 hours
+    0 */6 * * * /usr/bin/cleanup-temp.sh
+    
+    # Send daily report - weekdays at 5 PM
+    0 17 * * 1-5 /usr/bin/daily-report.sh
+    
+    # Weekend maintenance - Saturdays at 1 AM
+    0 1 * * 6 /usr/bin/weekend-maintenance.sh
+    
+    # Health check - every 15 minutes
+    */15 * * * * /usr/bin/health-check.sh
+
+    # Early morning checks - daily at 1:10, 2:10, 3:10 AM
+    10 1,2,3 * * * /usr/bin/early-morning-check.sh

@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cron-query-service
+  labels:
+    app: cron-query-service
+    version: "1.2.2"
+spec:
+  replicas: 2  # Run 2 instances for learning about scaling
+  selector:
+    matchLabels:
+      app: cron-query-service
+  template:
+    metadata:
+      labels:
+        app: cron-query-service
+        version: "1.2.2"
+    spec:
+      containers:
+      - name: cron-query-service
+        image: cron-query-service:latest
+        imagePullPolicy: Never  # Use local image (for learning)
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        env:
+        - name: SERVER_PORT
+          value: "8080"
+        - name: SPRING_PROFILES_ACTIVE
+          value: "dev"
+        - name: CRONTAB_TEST_FILE
+          value: "/app/test_crontab.txt"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          initialDelaySeconds: 45
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: crontab-volume
+          mountPath: /app/test_crontab.txt
+          subPath: test_crontab.txt
+          readOnly: true
+      volumes:
+      - name: crontab-volume
+        configMap:
+          name: cron-query-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cron-query-service
+  labels:
+    app: cron-query-service
+spec:
+  type: LoadBalancer  # Exposes service externally (use NodePort for Minikube)
+  selector:
+    app: cron-query-service
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+    name: http
