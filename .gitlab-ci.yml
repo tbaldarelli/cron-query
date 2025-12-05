@@ -48,7 +48,7 @@ test_groovy:
 # Spring Boot microservice tests (Linux)
 test_spring_boot:
   stage: test
-  image: eclipse-temurin:21-jdk
+  image: maven:3.9-eclipse-temurin-21
   script:
     - ./gradlew build -x test
     - mkdir -p src/java/cron-query-service/lib
