@@ -18,6 +18,7 @@ The user will implement this by hand for learning purposes, adapting code from t
   - _Requirements: All (baseline validation)_
 
 - [ ] 1. Set up project dependencies and exception hierarchy
+  - **Learning Note**: This task is designed for manual implementation to practice Maven dependency management and Java exception hierarchies. Code by hand to learn, or ask Kiro to help with repetitive parts.
   - Add cron-utils 9.2.0 dependency to pom.xml
   - Add jqwik 1.8.2 test dependency to pom.xml
   - Create exception classes: CronParseException, InvalidQueryException, ScheduleAnalysisException
@@ -26,6 +27,7 @@ The user will implement this by hand for learning purposes, adapting code from t
   - _Requirements: 2.2, 3.5, 8.1, 8.2, 8.3_
 
 - [ ] 2. Implement CronParser component
+  - **Learning Note**: This task is designed for manual implementation to practice working with third-party libraries (cron-utils) and interface design. Code by hand to learn, or ask Kiro to help with repetitive parts.
   - [ ] 2.1 Create CronParser interface and implementation
     - Define interface with parse(), validate(), format() methods
     - Implement CronParserImpl using cron-utils library
@@ -60,6 +62,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - _Requirements: 2.2, 2.3, 9.1_
 
 - [ ] 3. Implement QueryParser component
+  - **Learning Note**: This task is designed for manual implementation to practice regex patterns, Java records, and complex parsing logic. Code by hand to learn, or ask Kiro to help with repetitive parts.
   - [ ] 3.1 Create QueryCriteria record and supporting types
     - Define QueryCriteria record with type, days, times, date fields
     - Define QueryType enum (DAY_BASED, TIME_BASED, COMBINED, UNKNOWN)
@@ -141,6 +144,7 @@ The user will implement this by hand for learning purposes, adapting code from t
   - Ask the user if questions arise
 
 - [ ] 5. Implement ScheduleAnalyzer component
+  - **Learning Note**: This task is designed for manual implementation to practice working with date/time APIs (java.time) and complex matching logic. Code by hand to learn, or ask Kiro to help with repetitive parts.
   - [ ] 5.1 Create ScheduleAnalyzer interface and implementation
     - Define interface with findMatching(), calculateNextRuns(), matches() methods
     - Implement day-of-week matching using cron-utils ExecutionTime
@@ -205,6 +209,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - _Requirements: 4.6, 8.4, 9.3_
 
 - [ ] 6. Implement CronJobService component
+  - **Learning Note**: This task is designed for manual implementation to practice service orchestration and dependency injection patterns. Code by hand to learn, or ask Kiro to help with repetitive parts.
   - [ ] 6.1 Create ParsedCronLine record
     - Define record with cronExpression, command, user, source, lineNumber, isValid
     - Add factory methods: fromUserCrontab(), fromSystemCrontab()
@@ -270,6 +275,7 @@ The user will implement this by hand for learning purposes, adapting code from t
   - Ask the user if questions arise
 
 - [ ] 8. Integrate components into Spring Boot service
+  - **Learning Note**: This task is designed for manual implementation to practice Spring Boot integration and refactoring existing code. Code by hand to learn, or ask Kiro to help with repetitive parts.
   - [ ] 8.1 Update CronQueryServiceImpl
     - Remove GroovyJarAdapter dependency injection
     - Add CronJobService dependency injection
@@ -329,6 +335,7 @@ The user will implement this by hand for learning purposes, adapting code from t
   - Ask the user if questions arise
 
 - [ ] 10. Remove Groovy dependencies
+  - **Learning Note**: This task is designed for manual implementation to practice dependency cleanup and build configuration. Code by hand to learn, or ask Kiro to help with repetitive parts.
   - [ ] 10.1 Remove Groovy JAR from pom.xml
     - Remove system dependency for cron-query-groovy
     - Remove maven-download-plugin configuration
@@ -356,6 +363,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - _Requirements: 1.5_
 
 - [ ] 11. Final validation and performance testing
+  - **Learning Note**: This task is designed for manual implementation to practice comprehensive testing and performance validation. Code by hand to learn, or ask Kiro to help with repetitive parts.
   - [ ]* 11.1 Run complete test suite
     - Execute all unit tests (mvn test)
     - Execute all integration tests
