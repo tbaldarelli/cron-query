@@ -61,6 +61,13 @@
             <artifactId>jackson-dataformat-yaml</artifactId>
         </dependency>
 
+        <!-- Cron utilities for parsing and execution time calculation -->
+        <dependency>
+            <groupId>com.cronutils</groupId>
+            <artifactId>cron-utils</artifactId>
+            <version>9.2.0</version>
+        </dependency>
+
         <!-- Groovy JAR dependency (system scope, downloaded by plugin) -->
         <dependency>
             <groupId>com.cronquery</groupId>
@@ -74,6 +81,14 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- jqwik for property-based testing -->
+        <dependency>
+            <groupId>net.jqwik</groupId>
+            <artifactId>jqwik</artifactId>
+            <version>1.8.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
