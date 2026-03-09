@@ -8,7 +8,7 @@ The user will implement this by hand for learning purposes, adapting code from t
 
 ## Tasks
 
-- [ ] 0. Establish baseline and verify current system
+- [x] 0. Establish baseline and verify current system
   - Run existing test suite (mvn test)
   - Verify all tests pass (establish green baseline)
   - Document current test count and coverage
