@@ -29,6 +29,41 @@
 - Verify file permissions after deployment
 - Check line endings on Linux after deployment
 
+### Version Management
+
+The project uses `bump2version` to manage version numbers across all implementations (Python, Groovy, Java Spring Boot).
+
+**Installation:**
+```bash
+pip install bump2version
+```
+
+**Usage:**
+```bash
+# Bump patch version (1.3.1 → 1.3.2)
+bump2version patch
+
+# Bump minor version (1.3.1 → 1.4.0)
+bump2version minor
+
+# Bump major version (1.3.1 → 2.0.0)
+bump2version major
+```
+
+**What it does:**
+- Updates version in `setup.py`, `build.gradle`, `pom.xml`, and other configured files
+- Creates a git commit with the version change
+- Creates a git tag (e.g., `v1.3.2`)
+
+**Configuration:**
+Version management is configured in `.bumpversion.cfg` and updates:
+- Python: `setup.py`, `src/python/cron_query/__init__.py`
+- Groovy: `build.gradle`
+- Java Spring Boot: `src/java/cron-query-service/pom.xml`
+- Documentation: `CHANGELOG.md`, `man/man1/cron-query.1`
+
+**Note:** If you encounter issues running `bump2version` directly, you may need to run it via Python CLI: `python -m bumpversion <part>`
+
 ### Common Issues
 1. **Line Endings**
    - If scripts fail on Linux with "bad interpreter", check line endings
