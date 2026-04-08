@@ -35,12 +35,12 @@ The user will implement this by hand for learning purposes, adapting code from t
   - Add getters for context fields (invalidExpression, invalidQuery)
   - _Requirements: 2.2, 3.5, 8.1, 8.2, 8.3_
 
-- [ ] 2. Implement CronParser component
+- [x] 2. Implement CronParser component
   - **⚠️ LEARNING TASK - MANUAL IMPLEMENTATION REQUIRED**
     - **Skills to practice**: Working with third-party libraries (cron-utils), interface design
     - **Action required**: Implement this task manually, or explicitly ask Kiro to proceed
     - **Kiro will STOP here and wait for your decision**
-  - [ ] 2.1 Create CronParser interface and implementation
+  - [x] 2.1 Create CronParser interface and implementation
     - Define interface with parse(), validate(), format() methods
     - Implement CronParserImpl using cron-utils library
     - Configure CronDefinition for Unix 5-field format
@@ -49,7 +49,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Throw CronParseException with descriptive messages for invalid expressions
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
 
-  - [ ]! 2.2 Write unit tests for CronParser
+  - [x]! 2.2 Write unit tests for CronParser
     - Test valid expressions (simple, ranges, lists, steps)
     - Test invalid expressions (out of range, malformed)
     - Test edge cases (Sunday as 0 vs 7, DOM/DOW OR logic)
