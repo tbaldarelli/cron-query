@@ -29,3 +29,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# jqwik property-based testing
+.jqwik-database
