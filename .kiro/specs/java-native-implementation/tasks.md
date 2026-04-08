@@ -57,7 +57,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Test format method output
     - _Requirements: 9.1_
 
-  - [ ]! 2.3 Write property test for round-trip consistency
+  - [x]! 2.3 Write property test for round-trip consistency
     - **Property 1: Cron Expression Round-Trip**
     - **Validates: Requirements 2.7**
     - Generate random valid cron expressions
@@ -65,7 +65,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Use jqwik with custom cron expression generator
     - _Requirements: 2.7, 9.1_
 
-  - [ ]! 2.4 Write property test for validation consistency
+  - [x]! 2.4 Write property test for validation consistency
     - **Property 2: Cron Validation Consistency**
     - **Validates: Requirements 2.2, 2.3**
     - Generate random cron expression strings (valid and invalid)
