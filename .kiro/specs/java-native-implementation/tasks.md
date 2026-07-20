@@ -73,12 +73,12 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Verify parse() throws exception implies validate() returns false
     - _Requirements: 2.2, 2.3, 9.1_
 
-- [ ] 3. Implement QueryParser component
+- [-] 3. Implement QueryParser component
   - **⚠️ LEARNING TASK - MANUAL IMPLEMENTATION REQUIRED**
     - **Skills to practice**: Regex patterns, Java records, complex parsing logic
     - **Action required**: Implement this task manually, or explicitly ask Kiro to proceed
     - **Kiro will STOP here and wait for your decision**
-  - [ ] 3.1 Create QueryCriteria record and supporting types
+  - [x] 3.1 Create QueryCriteria record and supporting types
     - Define QueryCriteria record with type, days, times, date fields
     - Define QueryType enum (DAY_BASED, TIME_BASED, COMBINED, UNKNOWN)
     - Define TimeRange record with start, end, RangeType
@@ -86,7 +86,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Add helper methods: hasDayCriteria(), hasTimeCriteria(), isSpecificDate()
     - _Requirements: 3.7, 7.3_
 
-  - [ ] 3.2 Create QueryParser interface and implementation
+  - [x] 3.2 Create QueryParser interface and implementation
     - Define interface with parse() and normalize() methods
     - Implement regex patterns for day, time, and combined queries
     - Support day names (Monday, Saturday, weekends, weekdays)
