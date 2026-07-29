@@ -49,7 +49,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Throw CronParseException with descriptive messages for invalid expressions
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
 
-  - [x]! 2.2 Write unit tests for CronParser
+  - [x] 2.2 Write unit tests for CronParser
     - Test valid expressions (simple, ranges, lists, steps)
     - Test invalid expressions (out of range, malformed)
     - Test edge cases (Sunday as 0 vs 7, DOM/DOW OR logic)
@@ -57,7 +57,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Test format method output
     - _Requirements: 9.1_
 
-  - [x]! 2.3 Write property test for round-trip consistency
+  - [x] 2.3 Write property test for round-trip consistency
     - **Property 1: Cron Expression Round-Trip**
     - **Validates: Requirements 2.7**
     - Generate random valid cron expressions
@@ -65,7 +65,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Use jqwik with custom cron expression generator
     - _Requirements: 2.7, 9.1_
 
-  - [x]! 2.4 Write property test for validation consistency
+  - [x] 2.4 Write property test for validation consistency
     - **Property 2: Cron Validation Consistency**
     - **Validates: Requirements 2.2, 2.3**
     - Generate random cron expression strings (valid and invalid)
@@ -102,7 +102,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Throw InvalidQueryException with descriptive messages
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8, 13.9, 13.10, 13.11_
 
-  - [ ]! 3.3 Write unit tests for QueryParser
+  - [x] 3.3 Write unit tests for QueryParser
     - Test day-only queries (Saturday, weekends, weekdays)
     - Test time-only queries (8 AM, noon, 20:30)
     - Test time range queries (after, before, between)
@@ -115,7 +115,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Test edge cases (invalid dates, overnight ranges)
     - _Requirements: 9.2_
 
-  - [ ]! 3.4 Write property test for parser completeness
+  - [ ] 3.4 Write property test for parser completeness
     - **Property 3: Query Parser Completeness**
     - **Validates: Requirements 3.1, 3.2, 3.3, 3.4, 10.1-10.6**
     - Generate queries with recognizable patterns
