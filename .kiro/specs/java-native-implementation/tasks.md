@@ -73,7 +73,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Verify parse() throws exception implies validate() returns false
     - _Requirements: 2.2, 2.3, 9.1_
 
-- [-] 3. Implement QueryParser component
+- [x] 3. Implement QueryParser component
   - **⚠️ LEARNING TASK - MANUAL IMPLEMENTATION REQUIRED**
     - **Skills to practice**: Regex patterns, Java records, complex parsing logic
     - **Action required**: Implement this task manually, or explicitly ask Kiro to proceed
@@ -115,7 +115,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Test edge cases (invalid dates, overnight ranges)
     - _Requirements: 9.2_
 
-  - [ ] 3.4 Write property test for parser completeness
+  - [x] 3.4 Write property test for parser completeness
     - **Property 3: Query Parser Completeness**
     - **Validates: Requirements 3.1, 3.2, 3.3, 3.4, 10.1-10.6**
     - Generate queries with recognizable patterns
@@ -123,14 +123,14 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Verify appropriate criteria fields are populated
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 9.2_
 
-  - [ ]! 3.5 Write property test for normalization idempotence
+  - [x] 3.5 Write property test for normalization idempotence
     - **Property 4: Query Normalization Idempotence**
     - **Validates: Requirements 13.8**
     - Generate random query strings
     - Verify normalize(normalize(q)) equals normalize(q)
     - _Requirements: 13.8, 9.2_
 
-  - [ ]! 3.6 Write property test for time format normalization
+  - [x] 3.6 Write property test for time format normalization
     - **Property 5: Time Format Normalization**
     - **Validates: Requirements 10.7**
     - Generate same time in different formats (12-hour, 24-hour, special names)
@@ -138,14 +138,14 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Test: "8 PM", "20:00", "8:00 PM" all produce LocalTime.of(20, 0)
     - _Requirements: 10.7, 9.2_
 
-  - [ ]! 3.7 Write property test for date validation
+  - [x] 3.7 Write property test for date validation
     - **Property 6: Date Validation**
     - **Validates: Requirements 13.10**
     - Generate invalid calendar dates (2/30/2025, 4/31/2025)
     - Verify InvalidQueryException is thrown
     - _Requirements: 13.10, 9.2_
 
-  - [ ]! 3.8 Write property test for day-date conflict detection
+  - [x] 3.8 Write property test for day-date conflict detection
     - **Property 7: Day-Date Conflict Detection**
     - **Validates: Requirements 13.3**
     - Generate queries with mismatched day names and dates
@@ -178,7 +178,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Use java.time APIs throughout (no Joda-Time)
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 7.2, 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7_
 
-  - [ ]! 5.2 Write unit tests for ScheduleAnalyzer
+  - [ ] 5.2 Write unit tests for ScheduleAnalyzer
     - Test day-only matching (jobs on Saturday, weekends, weekdays)
     - Test time-only matching (jobs at 8 AM, jobs at noon)
     - Test time range matching (after, before, between)
@@ -191,7 +191,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Test edge cases (leap years, DST transitions, overnight ranges)
     - _Requirements: 9.3_
 
-  - [ ]! 5.3 Write property test for schedule matching correctness
+  - [ ] 5.3 Write property test for schedule matching correctness
     - **Property 8: Schedule Matching Correctness**
     - **Validates: Requirements 4.1, 4.2, 4.3**
     - Generate random cron jobs and query criteria
@@ -200,7 +200,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Check time constraints match actual execution times
     - _Requirements: 4.1, 4.2, 4.3, 9.3_
 
-  - [ ]! 5.4 Write property test for next run count
+  - [ ] 5.4 Write property test for next run count
     - **Property 9: Next Run Count**
     - **Validates: Requirements 4.5, 11.1**
     - Generate random valid cron expressions and counts N
@@ -209,7 +209,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Verify results are in chronological order
     - _Requirements: 4.5, 11.1, 9.3_
 
-  - [ ]! 5.5 Write property test for next run format
+  - [ ] 5.5 Write property test for next run format
     - **Property 10: Next Run Format**
     - **Validates: Requirements 11.3**
     - Generate random execution times
@@ -217,7 +217,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Verify strings can be parsed back to ZonedDateTime
     - _Requirements: 11.3, 9.3_
 
-  - [ ]! 5.6 Write property test for graceful degradation
+  - [ ] 5.6 Write property test for graceful degradation
     - **Property 11: Graceful Degradation**
     - **Validates: Requirements 4.6, 8.4**
     - Generate job lists with mix of valid and invalid expressions
@@ -255,7 +255,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Translate component exceptions to service exceptions
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8_
 
-  - [ ]! 6.3 Write unit tests for CronJobService
+  - [ ] 6.3 Write unit tests for CronJobService
     - Test executeQuery() with natural language queries
     - Test executeQuery() with structured queries
     - Test loadAllJobs() with various crontab formats
@@ -266,14 +266,14 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Mock all dependencies (CronParser, QueryParser, ScheduleAnalyzer)
     - _Requirements: 9.4_
 
-  - [ ]! 6.4 Write property test for response completeness
+  - [ ] 6.4 Write property test for response completeness
     - **Property 12: Query Response Completeness**
     - **Validates: Requirements 5.7**
     - Generate random successful query executions
     - Verify all required fields are non-null (jobs, totalCount, query, sources, executionTimeMs)
     - _Requirements: 5.7, 9.4_
 
-  - [ ]! 6.5 Write property test for exception context preservation
+  - [ ] 6.5 Write property test for exception context preservation
     - **Property 15: Exception Context Preservation**
     - **Validates: Requirements 8.1, 8.2**
     - Generate invalid inputs (cron expressions, queries)
@@ -281,7 +281,7 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Check exception message or field contains problematic input
     - _Requirements: 8.1, 8.2, 9.4_
 
-  - [ ]! 6.6 Write property test for empty result handling
+  - [ ] 6.6 Write property test for empty result handling
     - **Property 16: Empty Result Handling**
     - **Validates: Requirements 5.7**
     - Generate queries that match zero jobs
@@ -318,14 +318,14 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Maintain existing logging and metrics in handlers
     - _Requirements: 6.5, 6.6, 8.6_
 
-  - [ ]! 8.3 Update CronQueryServiceImplTest
+  - [ ] 8.3 Update CronQueryServiceImplTest
     - Replace GroovyJarAdapter mock with CronJobService mock
     - Update test setup to mock CronJobService methods
     - Verify all existing test scenarios still pass
     - Keep all test assertions unchanged (testing orchestration, not implementation)
     - _Requirements: 9.4_
 
-  - [ ]! 8.4 Write integration tests for Java components
+  - [ ] 8.4 Write integration tests for Java components
     - Create JavaComponentIntegrationTest (replaces GroovyJarIntegrationTest)
     - Test end-to-end workflow: query → parse → analyze → response
     - Test with real crontab data (test_crontab.txt)
@@ -335,14 +335,14 @@ The user will implement this by hand for learning purposes, adapting code from t
     - Do NOT mock components - test real integration
     - _Requirements: 9.5_
 
-  - [ ]! 8.5 Write API property tests
+  - [ ] 8.5 Write API property tests
     - **Property 13: HTTP Status Code Mapping**
     - **Validates: Requirements 6.4, 6.5, 6.6**
     - Generate various request scenarios (success, invalid query, internal error)
     - Verify correct HTTP status codes (200, 400, 500)
     - _Requirements: 6.4, 6.5, 6.6, 9.5_
 
-  - [ ]! 8.6 Write API compatibility property test
+  - [ ] 8.6 Write API compatibility property test
     - **Property 14: API Compatibility**
     - **Validates: Requirements 6.3**
     - Generate random QueryRequest objects
@@ -394,41 +394,41 @@ The user will implement this by hand for learning purposes, adapting code from t
     - **Skills to practice**: Comprehensive testing, performance validation
     - **Action required**: Implement this task manually, or explicitly ask Kiro to proceed
     - **Kiro will STOP here and wait for your decision**
-  - [ ]! 11.1 Run complete test suite
+  - [ ] 11.1 Run complete test suite
     - Execute all unit tests (mvn test)
     - Execute all integration tests
     - Execute all property-based tests
     - Verify 100% pass rate
     - _Requirements: 9.6_
 
-  - [ ]! 11.2 Verify code coverage
+  - [ ] 11.2 Verify code coverage
     - Generate coverage report (mvn jacoco:report)
     - Verify overall coverage is at least 80%
     - Check coverage for each component
     - _Requirements: 9.6_
 
-  - [ ]* 11.3 Performance testing
+  - [ ] 11.3 Performance testing
     - Create test crontab with 1000 jobs
     - Execute various query types
     - Measure execution time for each query
     - Verify all queries complete in under 500ms
     - _Requirements: Performance.1_
 
-  - [ ]! 11.4 API compatibility validation
+  - [ ] 11.4 API compatibility validation
     - Run CronQueryApiIntegrationTest
     - Verify all endpoints return expected responses
     - Compare response JSON structure with Groovy implementation
     - Verify no breaking changes
     - _Requirements: 6.1, 6.2, 6.3, 6.7, Compatibility.2_
 
-  - [ ]! 11.5 Health check and metrics validation
+  - [ ] 11.5 Health check and metrics validation
     - Test /actuator/health endpoint
     - Test /actuator/metrics endpoints
     - Verify all metrics are recorded correctly
     - Test Prometheus endpoint if configured
     - _Requirements: 12.2, 12.3_
 
-  - [ ]* 11.6 Configuration validation
+  - [ ] 11.6 Configuration validation
     - Verify application.yml is unchanged
     - Test with different crontab sources
     - Verify logging configuration works
