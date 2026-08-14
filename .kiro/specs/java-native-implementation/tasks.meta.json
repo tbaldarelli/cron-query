@@ -77,6 +77,18 @@
         "chatSessionId": "sess_ba578322-4d8f-4e17-a411-8572eee74e64",
         "timestamp": 1786054572125
       }
+    ],
+    "4. Checkpoint - Verify parsing components": [
+      {
+        "executionId": "af7ccd40-1171-4594-b108-aedeb6d6823b",
+        "chatSessionId": "sess_0a2cd7ec-7861-4901-b81f-67d4c6dd586f",
+        "timestamp": 1786743954181
+      },
+      {
+        "executionId": "af7ccd40-1171-4594-b108-aedeb6d6823b",
+        "chatSessionId": "sess_0a2cd7ec-7861-4901-b81f-67d4c6dd586f",
+        "timestamp": 1786744434740
+      }
     ]
   }
 }

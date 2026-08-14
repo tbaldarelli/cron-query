@@ -1,8 +1,11 @@
 package com.cronquery.service.parser;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -11,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +68,7 @@ public class QueryParserImpl implements QueryParser {
     @Override
     public QueryCriteria parse(String query) throws InvalidQueryException {
         if (!(query instanceof String) || query.isBlank()) {
-            throw new InvalidQueryException("Empty query");
+            throw new InvalidQueryException("Empty query", query);
         }
         
         String normalizedQuery = query.trim().toLowerCase();
@@ -78,9 +82,7 @@ public class QueryParserImpl implements QueryParser {
                 return combined;
             }
         } catch (InvalidQueryException e) {
-            if (e.getMessage().contains("Date conflict:")) {
-                throw e;
-            }
+            throw e;
         }
         
         // Try to parse as day-based query
@@ -90,7 +92,8 @@ public class QueryParserImpl implements QueryParser {
                 log.debug("Parsed as day query: {}", dayCriteria);
                 return dayCriteria;
             }
-        } catch (InvalidQueryException ignored) {
+        } catch (InvalidQueryException e) {
+            throw e;
         }
         
         // Try to parse as time-based query
@@ -100,7 +103,8 @@ public class QueryParserImpl implements QueryParser {
                 log.debug("Parsed as time query: {}", timeCriteria);
                 return timeCriteria;
             }
-        } catch (InvalidQueryException ignored) {
+        } catch (InvalidQueryException e) {
+            throw e;
         }
         
         // If we can't parse it, return unknown type
@@ -120,9 +124,9 @@ public class QueryParserImpl implements QueryParser {
         // Combined patterns
         List<Pattern> patterns = Arrays.asList(
             Pattern.compile("(?i)(this|next|coming|comming)\\s+(\\w+)\\s*,?\\s*(after|before|between)\\s+(.+)"),
-            Pattern.compile("(?i)(\\w+day)\\s+(\\d{1,2}\\/\\d{1,2}\\/\\d{4})\\s*(after|before|between)\\s+(.+)"),
+            Pattern.compile("(?i)(\\w+day)\\s+(\\d{1,2}[/-]\\d{1,2}[/-]\\d{4})\\s*(after|before|between)\\s+(.+)"),
             Pattern.compile("(?i)(today|tomorrow|yesterday)\\s*(after|before|between)\\s+(.+)"),
-            Pattern.compile("(?i)(\\w+day|weekends?|weekdays?)\\s*,?\\s*(after|before|between)\\s+(.+)"),
+            Pattern.compile("(?i)(\\w+day|weekends?|weekdays?)\\s*,?\\s*(at|after|before|between)\\s+(.+)"),
             Pattern.compile("(?i)(after|before|between)\\s+(.+)\\s+on\\s+(\\w+day|weekends?|weekdays?)")
         );
         
@@ -149,7 +153,7 @@ public class QueryParserImpl implements QueryParser {
         
         // Parse based on captured groups
         if (groupCount >= 4) {
-            dayPart = matcher.group(2);
+            dayPart = matcher.group(1) + ' ' + matcher.group(2);
             timeRelation = matcher.group(3);
             timePart = matcher.group(4);
         } else if (groupCount == 3) {
@@ -190,6 +194,30 @@ public class QueryParserImpl implements QueryParser {
             criteria.specificDate(), criteria.isRelativeDate(),
             criteria.rawQuery());
     }
+
+    private static LocalDate parseDate(String dateQuery )
+    {
+        LocalDate date = null;
+        try {
+            date = LocalDate.parse(dateQuery);
+        } catch (Exception e) {
+            try {
+                date = LocalDate.parse(dateQuery,DateTimeFormatter.ofPattern("M/d/uuuu").withResolverStyle(ResolverStyle.STRICT));
+            } catch (Exception e1) {
+                try {
+                    date = LocalDate.parse(dateQuery, DateTimeFormatter.ofPattern("uuuu-M-d").withResolverStyle(ResolverStyle.STRICT));
+                } catch (Exception e2) {
+                    try {
+                        date = LocalDate.parse(dateQuery, DateTimeFormatter.ofPattern("M-d-uuuu").withResolverStyle(ResolverStyle.STRICT));
+                    } catch (Exception e3) {
+                        throw e3;
+                    }
+                }
+            }
+        }
+
+        return date;
+    }
     
     /**
      * Parse day-based queries like 'Saturday', 'weekdays', 'this Monday'.
@@ -209,6 +237,25 @@ public class QueryParserImpl implements QueryParser {
                 null, null, null, false, query);
         }
         
+        // Get specific date, if we have it
+        LocalDate specificDate = null;
+        List<Pattern> patterns = Arrays.asList(
+            Pattern.compile("(?i)(\\d{1,2}[/-]\\d{1,2}[/-]\\d{4})"),
+            Pattern.compile("(?i)(\\d{4}[/-]\\d{1,2}[/-]\\d{1,2})")
+        );
+        
+        for (Pattern pattern : patterns) {
+            Matcher matcher = pattern.matcher(normalized);
+            if(matcher.find())
+            {
+                try {
+                    specificDate = parseDate(matcher.group(1));
+                } catch (Exception e) {
+                    throw new InvalidQueryException("Invalid date format: " + matcher.group(1));
+                }
+            }
+        }
+
         // Check for specific day names
         Set<DayOfWeek> foundDays = new HashSet<>();
         DAY_NAMES.entrySet().stream()
@@ -219,10 +266,59 @@ public class QueryParserImpl implements QueryParser {
         if (foundDays instanceof Set && !foundDays.isEmpty()) {
             boolean isSpecific = normalized.contains("this") ||
                 normalized.contains("next") ||
-                normalized.contains("coming");
+                normalized.contains("coming") ||
+                normalized.contains("comming");
+            
+            // If we have a date, set our specifc date, then see if it matches our day.
+            String parts[] = normalized.split("\\s+");
+            if(isSpecific)
+            {
+                /* We know it is specific because of our special words, we just need to calculate the date
+                 *  We are expecting something like "this saturday"
+                 *  So we need to find the day, and then get the date for that day.
+                 */
+                if(parts != null && parts.length == 2)
+                {
+                    DayOfWeek targetDay = DAY_NAMES.get(parts[1]);
+                    LocalDate now = LocalDate.now();
+                    LocalDate date = now.with(targetDay);
+                    if(parts[0].equals("this") ||
+                        parts[0].equals("coming") ||
+                        parts[0].equals("comming"))
+                    {
+                        if(date.isBefore(now))
+                        {
+                            date = date.plusWeeks(1);
+                        }
+                        specificDate = date;
+                    }
+                    else if( parts[0].equals("next"))
+                    {
+                        date = date.plusWeeks(1);
+                        specificDate = date;
+                    }
+                }
+            }
+
+            if (specificDate instanceof LocalDate && !foundDays.contains(specificDate.getDayOfWeek()))
+            {
+                throw new InvalidQueryException("Date conflict: " + specificDate + " is a " +
+                    specificDate.getDayOfWeek().name().charAt(0) + 
+                    specificDate.getDayOfWeek().name().substring(1).toLowerCase() +
+                    " not a " +
+                    foundDays.stream()
+                        .map(d -> d.name().charAt(0) + d.name().substring(1).toLowerCase())
+                        .collect(Collectors.joining(", ")));
+            }
             
             return new QueryCriteria(QueryType.DAY_BASED,
-                foundDays, null, null, null, isSpecific, query);
+                foundDays, null, null, specificDate, isSpecific, query);
+        }
+        // so no day name, but something that looks like a date.
+        else if(specificDate instanceof LocalDate )
+        {
+            return new QueryCriteria(QueryType.DAY_BASED,
+                foundDays, null, null, specificDate, false, query);
         }
         
         // Check for today/tomorrow/yesterday
@@ -319,6 +415,11 @@ public class QueryParserImpl implements QueryParser {
      */
     private static LocalTime parseSingleTime(String timeStr) {
         String normalized = timeStr.trim().toLowerCase();
+
+        // Convert noon to 12 pm and midnight to 12 am
+        normalized = normalized
+            .replaceAll("noon", "12 pm")
+            .replaceAll("midnight", "12 am");
         
         // Try 12-hour format FIRST (8 AM, 3:30 PM)
         // This must come before 24-hour to avoid matching "3:45" in "3:45 PM"
@@ -350,6 +451,16 @@ public class QueryParserImpl implements QueryParser {
                 return LocalTime.of(hour, minute);
             }
         }
+
+        // Try 24-hour format (1430, 900)
+        match24h = Pattern.compile("(\\d{1,2})(\\d{2})").matcher(normalized);
+        if (match24h.find()) {
+            int hour = Integer.parseInt(match24h.group(1));
+            int minute = Integer.parseInt(match24h.group(2));
+            if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                return LocalTime.of(hour, minute);
+            }
+        }
         
         return null;
     }
@@ -358,10 +469,57 @@ public class QueryParserImpl implements QueryParser {
      * Normalize query string (remove extra whitespace, etc.)
      */
     private static String normalizeQuery(String query) {
-        return query.trim()
+        String normalizedString = query.trim()
                     .replaceAll("\\s+", " ")
                     .replaceAll("[,;]", " ")
                     .toLowerCase();
+
+        /* Remove common question prefixes, prepositions and articles that don't affect meaning,
+         *  and standalone 'jobs' anywhere in the query (e.g., "Wednesday jobs after 12 am")
+         */
+        String[] patternsToRemove = {
+            // Common prefixes
+            "which.*jobs.*run",
+            "what.*jobs.*run", 
+            "which.*jobs.*execute",
+            "what.*jobs.*execute",
+            "show.*me.*jobs.*that.*run",
+            "show.*me.*jobs",
+            "show.*jobs.*that.*run",
+            "find.*jobs.*that.*run",
+            "jobs.*that.*run",
+            
+            // common prepositions and articles that don't affect meaning
+            "\\bon\\b",
+            "\\bin\\b",
+            "\\bthe\\b",
+            "\\ba\\b",
+            "\\ban\\b",
+            "\\bduring\\b",
+
+            // standalone 'jobs' anywhere in the query (e.g., "Wednesday jobs after 12 am")
+            "\\bjobs\\b"
+        };
+
+        for(String pattern : patternsToRemove) {
+            normalizedString = normalizedString.replaceAll(pattern, "");
+        }
+
+        // Replace duplicated whitespace
+        normalizedString = normalizedString.replaceAll("\\s+", " ").trim();
+
+        /* TODO: one thing in Python we don't do yet.  I see no need to remove 'at', so just keeping it.
+    # Special case: preserve 'at' if followed by a number (time expression)
+    if words and words[0] == 'at':
+        if len(words) >= 2 and re.match(r'\d', words[1]):
+            # Keep 'at' if followed by a number
+            pass
+        else:
+            # Remove 'at' if not followed by a number
+            words.pop(0)        
+         */
+
+        return normalizedString;
     }
 
     @Override

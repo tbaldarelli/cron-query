@@ -80,7 +80,8 @@ public class QueryParserImplTest {
     void testParseTimeOnlyQuery(String query, int hour, int minute)
     {
         QueryCriteria criteria = queryParser.parse(query);
-        assertEquals(QueryCriteria.QueryType.TIME_BASED, criteria.type());
+        assertEquals(QueryCriteria.QueryType.TIME_BASED, criteria.type(),
+            "Query '" + query + "' invalid type.");
         assertTrue(LocalTime.of(hour, minute).equals(criteria.exactTime()));
     }
 
@@ -205,7 +206,8 @@ public class QueryParserImplTest {
     void testParseExactDateQuery(String query, int year, int month, int dayOfMonth)
     {
         QueryCriteria criteria = queryParser.parse(query);
-        assertEquals(QueryCriteria.QueryType.DAY_BASED, criteria.type());
+        assertEquals(QueryCriteria.QueryType.DAY_BASED, criteria.type(),
+            "Query '" + query + "' should be day based.");
         assertEquals(LocalDate.of(year, month, dayOfMonth), criteria.specificDate());
     }
 
@@ -224,6 +226,25 @@ public class QueryParserImplTest {
     void testDayDateNoConflict() {
         QueryCriteria criteria = queryParser.parse("Thursday 9/18/2025");
         assertEquals(QueryCriteria.QueryType.DAY_BASED, criteria.type());
+        assertEquals(LocalDate.of(2025, 9, 18), criteria.specificDate());
+        assertTrue(criteria.daysOfWeek().contains(DayOfWeek.THURSDAY));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when day name conflicts with explicit date")
+    void testDayDateTimeConflict() {
+        InvalidQueryException exception = assertThrows(InvalidQueryException.class,
+            () -> queryParser.parse("Saturday 9/18/2025 after 10 AM"));
+        // System.out.println("Exception message: " + exception.getMessage());
+        assertTrue(exception.getMessage().contains("Thursday"));
+        assertTrue(exception.getMessage().contains("Saturday"));
+    }
+
+    @Test
+    @DisplayName("Should not throw exception when day name does not conflict with explicit date")
+    void testDayDateTimeNoConflict() {
+        QueryCriteria criteria = queryParser.parse("Thursday 9/18/2025 after 10 am");
+        assertEquals(QueryCriteria.QueryType.COMBINED, criteria.type());
         assertEquals(LocalDate.of(2025, 9, 18), criteria.specificDate());
         assertTrue(criteria.daysOfWeek().contains(DayOfWeek.THURSDAY));
     }
