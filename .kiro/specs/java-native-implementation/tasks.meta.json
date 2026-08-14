@@ -1,0 +1,94 @@
+{
+  "pbtResults": {
+    "3.4 Write property test for parser completeness": {
+      "status": "passed",
+      "lastRunTimestamp": 1785792984651
+    }
+  },
+  "executionHistory": {
+    "3.4 Write property test for parser completeness": [
+      {
+        "executionId": "956c0511-cf8b-4aac-8b22-58a4d444a66a",
+        "chatSessionId": "sess_c14bb2c6-e6bb-4de5-8016-c89ad4459195",
+        "timestamp": 1785363808621
+      },
+      {
+        "executionId": "f8fe30ee-51c4-43e3-bcb7-09db55f26de9",
+        "chatSessionId": "sess_259e95bd-9366-463c-b810-ec80cd92eaca",
+        "timestamp": 1785792869868
+      },
+      {
+        "executionId": "f8fe30ee-51c4-43e3-bcb7-09db55f26de9",
+        "chatSessionId": "sess_259e95bd-9366-463c-b810-ec80cd92eaca",
+        "timestamp": 1785792994468
+      }
+    ],
+    "3.5 Write property test for normalization idempotence": [
+      {
+        "executionId": "f873b294-af47-4d53-a934-3894b6b620a8",
+        "chatSessionId": "sess_539c56ac-5a8a-4d48-a419-f8daeff7f8b4",
+        "timestamp": 1785793330453
+      },
+      {
+        "executionId": "f873b294-af47-4d53-a934-3894b6b620a8",
+        "chatSessionId": "sess_539c56ac-5a8a-4d48-a419-f8daeff7f8b4",
+        "timestamp": 1785793350885
+      }
+    ],
+    "3.6 Write property test for time format normalization": [
+      {
+        "executionId": "41e81124-6781-4cfd-a085-7e80ee850c2e",
+        "chatSessionId": "sess_4ad820ed-5b56-41ed-94fe-eac44c29a7e6",
+        "timestamp": 1785796974100
+      },
+      {
+        "executionId": "41e81124-6781-4cfd-a085-7e80ee850c2e",
+        "chatSessionId": "sess_4ad820ed-5b56-41ed-94fe-eac44c29a7e6",
+        "timestamp": 1785796990330
+      }
+    ],
+    "3.7 Write property test for date validation": [
+      {
+        "executionId": "b95273d8-4b56-46d2-995d-5c7b301bd3ef",
+        "chatSessionId": "sess_c536ed87-1cec-4c53-aabb-ad9c5b7d32fc",
+        "timestamp": 1785797443258
+      },
+      {
+        "executionId": "b95273d8-4b56-46d2-995d-5c7b301bd3ef",
+        "chatSessionId": "sess_c536ed87-1cec-4c53-aabb-ad9c5b7d32fc",
+        "timestamp": 1785797459095
+      }
+    ],
+    "3.8 Write property test for day-date conflict detection": [
+      {
+        "executionId": "463debd6-743a-4fe5-a93a-3e7e86955c55",
+        "chatSessionId": "sess_ba578322-4d8f-4e17-a411-8572eee74e64",
+        "timestamp": 1786054151988
+      },
+      {
+        "executionId": "4e3bea38-e7ed-422e-b896-bb4ed0739fd8",
+        "chatSessionId": "sess_ba578322-4d8f-4e17-a411-8572eee74e64",
+        "timestamp": 1786054572025
+      }
+    ],
+    "3. Implement QueryParser component": [
+      {
+        "executionId": "4e3bea38-e7ed-422e-b896-bb4ed0739fd8",
+        "chatSessionId": "sess_ba578322-4d8f-4e17-a411-8572eee74e64",
+        "timestamp": 1786054572125
+      }
+    ],
+    "4. Checkpoint - Verify parsing components": [
+      {
+        "executionId": "af7ccd40-1171-4594-b108-aedeb6d6823b",
+        "chatSessionId": "sess_0a2cd7ec-7861-4901-b81f-67d4c6dd586f",
+        "timestamp": 1786743954181
+      },
+      {
+        "executionId": "af7ccd40-1171-4594-b108-aedeb6d6823b",
+        "chatSessionId": "sess_0a2cd7ec-7861-4901-b81f-67d4c6dd586f",
+        "timestamp": 1786744434740
+      }
+    ]
+  }
+}
